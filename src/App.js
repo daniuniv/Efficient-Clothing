@@ -1,17 +1,24 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Register from './components/Register';
 import Login from './components/Login';
-import Register from './components/Register'; // import Register component
 
-const App = () => {
+function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        {/* Specific Routes */}
         <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Root Redirect */}
+        <Route path="/" element={<Navigate to="/login" />} />
+
+        {/* Catch-all for unmatched routes */}
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
   );
-};
+}
 
 export default App;
