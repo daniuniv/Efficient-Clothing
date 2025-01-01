@@ -10,14 +10,19 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account', // Forces account selection every time
+    });
+  
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
       alert('Logged in with Google!');
     } catch (error) {
       setError(error.message);
       console.error(error.message);
     }
   };
+  
 
   const handleEmailLogin = async () => {
     try {
