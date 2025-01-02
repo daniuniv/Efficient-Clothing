@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { addItem, getItems, updateItem, deleteItem } from "../services/inventoryService";
+import { addItem, getItemsByStoreName, updateItem, deleteItem } from "../services/inventoryService";
 
 const InventoryManagement = () => {
   const [items, setItems] = useState([]); // Inventory items
-  const [newItem, setNewItem] = useState({ name: "", category: "", price: 0, stock: 0, sizes: "", images: "" }); // New item form
+  const [newItem, setNewItem] = useState({
+    name: "",
+    category: "",
+    price: 0,
+    stock: 0,
+    sizes: "",
+    images: "",
+  }); // New item form
   const [editingItem, setEditingItem] = useState(null); // Currently editing item
   const [error, setError] = useState("");
+  const storeName = localStorage.getItem("storeName"); // Replace this with logic to fetch the logged-in manager's store name
 
   // Fetch items on component mount
   useEffect(() => {
@@ -14,21 +22,30 @@ const InventoryManagement = () => {
 
   const fetchItems = async () => {
     try {
-      const inventoryItems = await getItems();
+      console.log("Fetching items for store:", storeName); // Debugging
+      const inventoryItems = await getItemsByStoreName(storeName);
       setItems(inventoryItems);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching inventory items:", err.message);
       setError("Failed to fetch inventory items.");
     }
   };
 
   const handleAddItem = async () => {
     try {
-      await addItem(newItem);
-      setNewItem({ name: "", category: "", price: 0, stock: 0, sizes: "", images: "" }); // Reset form
+      const itemWithStoreName = { ...newItem, storeName }; // Attach storeName to the item
+      await addItem(itemWithStoreName);
+      setNewItem({
+        name: "",
+        category: "",
+        price: 0,
+        stock: 0,
+        sizes: "",
+        images: "",
+      }); // Reset form
       fetchItems(); // Refresh items
     } catch (err) {
-      console.error(err);
+      console.error("Error adding item:", err.message);
       setError("Failed to add item.");
     }
   };
@@ -41,7 +58,7 @@ const InventoryManagement = () => {
         fetchItems(); // Refresh items
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error updating item:", err.message);
       setError("Failed to update item.");
     }
   };
@@ -51,7 +68,7 @@ const InventoryManagement = () => {
       await deleteItem(id);
       fetchItems(); // Refresh items
     } catch (err) {
-      console.error(err);
+      console.error("Error deleting item:", err.message);
       setError("Failed to delete item.");
     }
   };
@@ -184,20 +201,15 @@ const InventoryManagement = () => {
               <td>{item.stock}</td>
               <td>{item.sizes}</td>
               <td>
-                <button
-                  className="btn btn-sm btn-warning"
-                  onClick={() => setEditingItem(item)}
-                >
+                <button className="btn btn-sm btn-warning" onClick={() => setEditingItem(item)}>
                   Edit
                 </button>
-                <button
-                  className="btn btn-sm btn-danger ms-2"
-                  onClick={() => handleDeleteItem(item.id)}
-                >
+                <button className="btn btn-sm btn-danger ms-2" onClick={() => handleDeleteItem(item.id)}>
                   Delete
                 </button>
               </td>
             </tr>
+
           ))}
         </tbody>
       </table>

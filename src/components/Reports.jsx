@@ -11,13 +11,16 @@ const Reports = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  const storeName = localStorage.getItem("storeName"); // Get the store name of the logged-in user
+
   // Fetch Orders Data for Sales Report
   const fetchSalesData = async () => {
     try {
       const ordersQuery = query(
         collection(db, "orders"),
         where("createdAt", ">=", new Date(startDate)),
-        where("createdAt", "<=", new Date(endDate))
+        where("createdAt", "<=", new Date(endDate)),
+        where("storeName", "==", storeName) // Filter orders by store name
       );
       const ordersSnapshot = await getDocs(ordersQuery);
       const orders = ordersSnapshot.docs.map((doc) => doc.data());
@@ -44,7 +47,10 @@ const Reports = () => {
         ...doc.data(),
       }));
 
-      setInventoryData(inventory);
+      // Filter inventory by store name
+      const filteredInventory = inventory.filter(item => item.storeName === storeName);
+      
+      setInventoryData(filteredInventory);
     } catch (err) {
       console.error("Error fetching inventory data:", err.message);
       setError("Failed to fetch inventory data. Please try again later.");
@@ -129,50 +135,54 @@ const Reports = () => {
       </div>
 
       {/* Inventory Report */}
-        <div className="card">
+      <div className="card">
         <div className="card-header">
-            <h4>Inventory Report</h4>
+          <h4>Inventory Report</h4>
         </div>
         <div className="card-body">
-            <table className="table table-bordered table-striped">
+          <table className="table table-bordered table-striped">
             <thead className="thead-dark">
-                <tr>
+              <tr>
                 <th>Item ID</th>
                 <th>Name</th>
                 <th>Stock Level</th>
                 <th>Price</th>
                 <th>Image</th> {/* New column for image */}
-                </tr>
+              </tr>
             </thead>
             <tbody>
-                {inventoryData.length > 0 ? (
+              {inventoryData.length > 0 ? (
                 inventoryData.map((item) => (
-                    <tr key={item.id}>
+                  <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{item.name || "N/A"}</td>
                     <td>{item.stock || "0"}</td>
                     <td>${item.price ? item.price.toFixed(2) : "0.00"}</td>
                     <td>
-                        {/* Display image if imageUrl exists */}
-                        {item.images ? (
-                        <img src={item.images} alt={item.name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
-                        ) : (
+                      {/* Display image if imageUrl exists */}
+                      {item.images ? (
+                        <img
+                          src={item.images}
+                          alt={item.name}
+                          style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                        />
+                      ) : (
                         "No Image"
-                        )}
+                      )}
                     </td>
-                    </tr>
+                  </tr>
                 ))
-                ) : (
+              ) : (
                 <tr>
-                    <td colSpan="5" className="text-center">
+                  <td colSpan="5" className="text-center">
                     No inventory data found.
-                    </td>
+                  </td>
                 </tr>
-                )}
+              )}
             </tbody>
-            </table>
+          </table>
         </div>
-        </div>
+      </div>
     </div>
   );
 };

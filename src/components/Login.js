@@ -21,12 +21,18 @@ const Login = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Fetch role from Firestore
+      // Fetch user data from Firestore
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
         alert(`Logged in as ${userData.role}`);
-        
+
+        // Store the store name in localStorage
+        const storeName = userData.storeName; // Assuming the user's store name is in userData.storeName
+        if (storeName) {
+          localStorage.setItem('storeName', storeName);
+        }
+
         // Redirect based on role
         if (userData.role === 'storeManager') {
           navigate('/store-manager-dashboard');
@@ -50,12 +56,18 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Fetch role from Firestore
+      // Fetch user data from Firestore
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
         alert(`Logged in as ${userData.role}`);
-        
+
+        // Store the store name in localStorage
+        const storeName = userData.storeName; // Assuming the user's store name is in userData.storeName
+        if (storeName) {
+          localStorage.setItem('storeName', storeName);
+        }
+
         // Redirect based on role
         if (userData.role === 'storeManager') {
           navigate('/store-manager-dashboard');
