@@ -1,33 +1,72 @@
 import React, { useState } from 'react';
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
-import { Link } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore'; // Import Firestore functions
+import { auth, db } from '../firebaseConfig'; // Ensure db is exported from firebaseConfig
+import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate(); // Initialize useNavigate
 
+  // Handle Google Login
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({
       prompt: 'select_account', // Forces account selection every time
     });
-  
+
     try {
       const result = await signInWithPopup(auth, provider);
-      alert('Logged in with Google!');
+      const user = result.user;
+
+      // Fetch role from Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        alert(`Logged in as ${userData.role}`);
+        
+        // Redirect based on role
+        if (userData.role === 'storeManager') {
+          navigate('/store-manager-dashboard');
+        } else if (userData.role === 'customer') {
+          navigate('/customer-dashboard');
+        } else {
+          alert('Unknown role. Please contact support.');
+        }
+      } else {
+        alert('User data not found in database.');
+      }
     } catch (error) {
       setError(error.message);
       console.error(error.message);
     }
   };
-  
 
+  // Handle Email/Password Login
   const handleEmailLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      alert('Logged in with Email!');
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Fetch role from Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        alert(`Logged in as ${userData.role}`);
+        
+        // Redirect based on role
+        if (userData.role === 'storeManager') {
+          navigate('/store-manager-dashboard');
+        } else if (userData.role === 'customer') {
+          navigate('/customer-dashboard');
+        } else {
+          alert('Unknown role. Please contact support.');
+        }
+      } else {
+        alert('User data not found in database.');
+      }
     } catch (error) {
       setError(error.message);
       console.error(error.message);
