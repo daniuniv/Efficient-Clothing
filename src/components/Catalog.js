@@ -6,6 +6,8 @@ const Catalog = () => {
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(1000);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -24,7 +26,7 @@ const Catalog = () => {
           productsQuery = query(productsQuery, where('category', '==', selectedCategory));
         }
       }
-      
+
       if (selectedSize) {
         // Fetching products with sizes that contain the selected size
         const snapshot = await getDocs(productsQuery);
@@ -38,23 +40,26 @@ const Catalog = () => {
           // Add this information to the product data
           return { ...product, sizeArray };
         });
-        
-        // Filter products that match the selected size
+
+        // Filter products that match the selected size and price range
         const filteredProducts = productList.filter(product => {
           const sizeIndex = ['S', 'M', 'L', 'XL'].indexOf(selectedSize);
-          return product.sizeArray[sizeIndex] === 1;
+          return product.sizeArray[sizeIndex] === 1 && product.price >= minPrice && product.price <= maxPrice;
         });
 
         setProducts(filteredProducts);
       } else {
         const snapshot = await getDocs(productsQuery);
         const productList = snapshot.docs.map(doc => doc.data());
-        setProducts(productList);
+        
+        // Filter products by price range
+        const filteredProducts = productList.filter(product => product.price >= minPrice && product.price <= maxPrice);
+        setProducts(filteredProducts);
       }
     };
 
     fetchProducts();
-  }, [selectedCategory, selectedSize]);
+  }, [selectedCategory, selectedSize, minPrice, maxPrice]);
 
   return (
     <div className="container mt-5">
@@ -77,6 +82,43 @@ const Catalog = () => {
           <option value="L">Large</option>
           <option value="XL">X-Large</option>
         </select>
+      </div>
+
+      {/* Price Range Slider */}
+      <div className="price-slider">
+        <div className="range-slider">
+          <input
+            type="range"
+            className="min-input"
+            min="0"
+            max="1000"
+            step="1"
+            value={minPrice}
+            onChange={(e) => setMinPrice(Number(e.target.value))}
+          />
+          <input
+            type="range"
+            className="max-input"
+            min="0"
+            max="1000"
+            step="1"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(Number(e.target.value))}
+          />
+          <div className="progress"></div>
+          <input
+            type="number"
+            className="min-price"
+            value={minPrice}
+            onChange={(e) => setMinPrice(Number(e.target.value))}
+          />
+          <input
+            type="number"
+            className="max-price"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(Number(e.target.value))}
+          />
+        </div>
       </div>
 
       <div className="row">
