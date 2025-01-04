@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { useNavigate } from 'react-router-dom';
 
 const Catalog = () => {
   const [products, setProducts] = useState([]);
@@ -63,7 +64,7 @@ const Catalog = () => {
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center mb-4">Product Catalog</h2>
+      <h2 className="text-center mb-4"     onClick={() => window.location.href = 'http://localhost:3000/customer-dashboard'}    >Product Catalog</h2>
 
       {/* Filters */}
       <div className="filters">
@@ -142,5 +143,7 @@ const Catalog = () => {
     </div>
   );
 };
+
+
 
 export default Catalog;
