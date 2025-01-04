@@ -15,6 +15,12 @@ const InventoryManagement = () => {
   const [error, setError] = useState("");
   const storeName = localStorage.getItem("storeName"); // Replace this with logic to fetch the logged-in manager's store name
 
+  const [filters, setFilters] = useState({
+    category: "",
+    size: "",
+    priceRange: [0, 100],
+  });
+
   // Fetch items on component mount
   useEffect(() => {
     fetchItems();
@@ -22,11 +28,18 @@ const InventoryManagement = () => {
 
   const fetchItems = async () => {
     try {
-      console.log("Fetching items for store:", storeName); // Debugging
       const inventoryItems = await getItemsByStoreName(storeName);
-      setItems(inventoryItems);
+      
+      // Apply filters here
+      const filteredItems = inventoryItems.filter(item => {
+        const categoryMatch = filters.category ? item.category === filters.category : true;
+        const sizeMatch = filters.size ? item.sizes.split(',').includes(filters.size) : true;
+        const priceMatch = item.price >= filters.priceRange[0] && item.price <= filters.priceRange[1];
+        return categoryMatch && sizeMatch && priceMatch;
+      });
+
+      setItems(filteredItems); // Set filtered items
     } catch (err) {
-      console.error("Error fetching inventory items:", err.message);
       setError("Failed to fetch inventory items.");
     }
   };
@@ -171,6 +184,31 @@ const InventoryManagement = () => {
         </button>
       </div>
 
+      {/* Filter UI */}
+      <div className="filters">
+        <select onChange={(e) => setFilters({...filters, category: e.target.value})}>
+          <option value="">All Categories</option>
+          <option value="Shirt">Shirts</option>
+          <option value="Pants">Pants</option>
+          <option value="Dress">Dresses</option>
+        </select>
+
+        <select onChange={(e) => setFilters({...filters, size: e.target.value})}>
+          <option value="">All Sizes</option>
+          <option value="S">Small</option>
+          <option value="M">Medium</option>
+          <option value="L">Large</option>
+        </select>
+
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={filters.priceRange[1]}
+          onChange={(e) => setFilters({...filters, priceRange: [filters.priceRange[0], e.target.value]})}
+        />
+      </div>
+
       {/* Inventory List */}
       <h4>Inventory</h4>
       <table className="table table-bordered">
@@ -209,7 +247,6 @@ const InventoryManagement = () => {
                 </button>
               </td>
             </tr>
-
           ))}
         </tbody>
       </table>

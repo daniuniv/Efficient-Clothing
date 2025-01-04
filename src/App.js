@@ -7,6 +7,7 @@ import StoreManagerDashboard from './components/StoreManagerDashboard';
 import CustomerDashboard from './components/CustomerDashboard'; 
 import CustomerOrders from "./components/CustomerOrders";
 import Reports from "./components/Reports";
+import Catalog from './components/Catalog'; // Import Catalog component
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
 
         {/* Customer */}
         <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+        <Route path="/catalog" element={<Catalog />} />  {/* New Catalog Route */}
 
         {/* Default */}
         <Route path="/" element={<Login />} />
