@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
+import "./DualSlider.js";
+import DualSlider from './DualSlider.js';
 
 const Catalog = () => {
   const [products, setProducts] = useState([]);
@@ -61,7 +63,8 @@ const Catalog = () => {
             </select>
           </div>
           <div className="col-md-3">
-            <div className="price-range">
+            <DualSlider minPrice={minPrice} setMinPrice={setMinPrice} maxPrice={maxPrice} setMaxPrice={setMaxPrice}/>
+            {/* <div className="price-range">
               <input
                 type="range"
                 className="min-input form-range"
@@ -80,7 +83,7 @@ const Catalog = () => {
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
               />
-            </div>
+            </div> */}
             <div className="d-flex justify-content-between">
               <input
                 type="number"
