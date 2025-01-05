@@ -11,3 +11,96 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* General Dark Mode Styles */
+body.dark-mode {
+  background-color: #121212; /* Dark background */
+  color: #eaeaea; /* Light text */
+}
+
+body.dark-mode .container,
+body.dark-mode .card,
+body.dark-mode .table,
+body.dark-mode .form-control,
+body.dark-mode .modal-content,
+body.dark-mode [class*="list-group"] {
+  background-color: #1e1e1e; /* Slightly lighter dark background */
+  color: #eaeaea; /* Light text */
+  border-color: #333333; /* Darker borders */
+}
+
+/* Tables */
+body.dark-mode th,
+body.dark-mode td {
+  background-color: #1e1e1e; /* Dark table cells */
+  color: #eaeaea;
+}
+
+/* Inputs */
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+  background-color: #2a2a2a; /* Input background */
+  color: #eaeaea; /* Input text */
+  border: 1px solid #333333; /* Input border */
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #aaaaaa; /* Placeholder text */
+}
+
+/* Navbar/Header */
+body.dark-mode .navbar,
+body.dark-mode .header {
+  background-color: #1e1e1e; /* Dark header background */
+  color: #eaeaea;
+  border-bottom: 1px solid #333333; /* Dark border under navbar */
+}
+
+/* Dropdowns */
+body.dark-mode .dropdown-menu {
+  background-color: #1e1e1e; /* Dropdown background */
+  color: #eaeaea;
+  border: 1px solid #333333;
+}
+
+/* Modals */
+body.dark-mode .modal-content {
+  background-color: #1e1e1e; /* Modal background */
+  color: #eaeaea; /* Light text */
+}
+
+/* Scrollbars */
+body.dark-mode ::-webkit-scrollbar {
+  width: 8px;
+  background-color: #2a2a2a;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: #555555;
+  border-radius: 4px;
+}
+
+/* Ensure all divs and header sections inherit dark mode */
+body.dark-mode header,
+body.dark-mode .header,
+body.dark-mode div {
+  background-color: #121212 !important; /* Force dark background */
+  color: #eaeaea !important; /* Force light text */
+  border: none !important; /* Remove unnecessary borders */
+}
+
+/* Fix potential layout issues */
+body.dark-mode .navbar {
+  background-color: #1e1e1e;
+  border-bottom: 1px solid #333333;
+}
+
+/* Example for a container or card element */
+body.dark-mode .container,
+body.dark-mode .card {
+  background-color: #121212; /* Match dark mode background */
+  color: #eaeaea; /* Light text color */
+  border: 1px solid #333; /* Optional: Add a border for contrast */
+}
