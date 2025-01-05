@@ -105,7 +105,7 @@ const Catalog = () => {
           <div key={index} className="col">
             <div className="card shadow-lg rounded">
               <img
-                src={product.imageUrl}
+                src={product.images}
                 className="card-img-top rounded"
                 alt={product.name}
                 style={{ height: '320px', objectFit: 'cover', backgroundColor: '#f8f9fa' }}

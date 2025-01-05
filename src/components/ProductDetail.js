@@ -33,7 +33,7 @@ const ProductDetail = () => {
       <div className="row">
         <div className="col-md-6">
           <img
-            src={product.imageUrl || 'https://via.placeholder.com/320'}
+            src={product.images || 'https://via.placeholder.com/320'}
             alt={product.name}
             className="img-fluid"
           />
