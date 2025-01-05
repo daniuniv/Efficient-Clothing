@@ -104,3 +104,18 @@ body.dark-mode .card {
   color: #eaeaea; /* Light text color */
   border: 1px solid #333; /* Optional: Add a border for contrast */
 }
+
+body.dark-mode .price-range .form-range::-moz-range-track {
+  height: 8px;
+  color:#121212;
+  background: #333;
+  border-radius: 4px;
+}
+body.dark-mode .price-range .form-range {
+  background: #121212;
+  border:transparent;
+}
+
+
+
+
