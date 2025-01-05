@@ -1,49 +1,42 @@
+import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
 
-import "./DualSlider.css"; // Your custom styles for the slider
+const minDistance = 100;  // Minimum distance between the points
 
-const DualSlider = ({minPrice, setMinPrice, maxPrice, setMaxPrice}) => {
+export default function DualSlider({ minPrice, setMinPrice, maxPrice, setMaxPrice }) {
+  const [value, setValue] = useState([minPrice, maxPrice]);  // Initialize with props values
 
+  const handleChange = (event, newValue, activeThumb) => {
+    if (!Array.isArray(newValue)) {
+      return;
+    }
 
-    const min = 0;
-    const max = 1000;
-  
-    const handleMinChange = (value) => {
-      if (value < maxPrice) setMinPrice(value);
-    };
-  
-    const handleMaxChange = (value) => {
-      if (value > minPrice) setMaxPrice(value);
-    };
-  
-    return (
-      <div className="slider-container">
-        <div className="slider">
-          <input
-            type="range"
-            min={min}
-            max={max}
-            value={minPrice}
-            onChange={(e) => handleMinChange(Number(e.target.value))}
-            className="thumb thumb-left"
-          />
-          <input
-            type="range"
-            min={min}
-            max={max}
-            value={maxPrice}
-            onChange={(e) => handleMaxChange(Number(e.target.value))}
-            className="thumb thumb-right"
-          />
-          <div
-            className="slider-track"
-            style={{
-              left: `${(minPrice / max) * 100}%`,
-              right: `${100 - (maxPrice / max) * 100}%`,
-            }}
-          />
-        </div>
-      </div>
-    );
+    if (activeThumb === 0) {
+      // Update the min value while maintaining the minDistance
+      const newMin = Math.min(newValue[0], value[1] - minDistance);
+      setValue([newMin, value[1]]);
+      setMinPrice(newMin); // Update the parent minPrice state
+    } else {
+      // Update the max value while maintaining the minDistance
+      const newMax = Math.max(newValue[1], value[0] + minDistance);
+      setValue([value[0], newMax]);
+      setMaxPrice(newMax); // Update the parent maxPrice state
+    }
   };
-  
-  export default DualSlider;
+
+  return (
+    <Box sx={{ width: 300 }}>
+      <Slider
+        value={value}
+        onChange={handleChange}
+        valueLabelDisplay="auto"
+        valueLabelFormat={(value) => `${value}$`}  // Format the value with a dollar sign
+        disableSwap
+        min={0}
+        max={1000}
+        valueLabelDisplay="auto"
+      />
+    </Box>
+  );
+}
