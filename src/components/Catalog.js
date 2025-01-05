@@ -14,28 +14,43 @@ const Catalog = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      let querySnapshot = await getDocs(collection(db, 'inventory'));
-      let productList = querySnapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id, // Get the Firestore document ID
-      }));
+  const fetchProducts = async () => {
+    let querySnapshot = await getDocs(collection(db, 'inventory'));
+    let productList = querySnapshot.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id, // Get the Firestore document ID
+    }));
 
-      if (selectedCategory) {
+    if (selectedCategory) {
+      // Merging Sweatpants and Jeans into Pants category
+      if (selectedCategory === "Pants") {
+        productList = productList.filter(product =>
+          ['Pants', 'Sweatpants', 'Jeans'].includes(product.category)
+        );
+      }
+      
+      // Merging Sweatshirt into Longsleeve Shirt category
+      else if (selectedCategory === "Longsleeve Shirt") {
+        productList = productList.filter(product =>
+          ['Longsleeve Shirt', 'Sweatshirt'].includes(product.category)
+        );
+      } else {
         productList = productList.filter(product => product.category === selectedCategory);
       }
+    }
 
-      if (selectedSize) {
-        productList = productList.filter(product => product.sizes.split(',').includes(selectedSize));
-      }
+    if (selectedSize) {
+      productList = productList.filter(product => product.sizes.split(',').includes(selectedSize));
+    }
 
-      productList = productList.filter(product => product.price >= minPrice && product.price <= maxPrice);
+    productList = productList.filter(product => product.price >= minPrice && product.price <= maxPrice);
 
-      setProducts(productList);
-    };
+    setProducts(productList);
+  };
 
-    fetchProducts();
-  }, [selectedCategory, selectedSize, minPrice, maxPrice]);
+  fetchProducts();
+}, [selectedCategory, selectedSize, minPrice, maxPrice]);
+
 
   return (
     <div className="container mt-5">
