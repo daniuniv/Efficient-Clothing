@@ -18,7 +18,7 @@ const InventoryManagement = () => {
   const [filters, setFilters] = useState({
     category: "",
     size: "",
-    priceRange: [0, 100],
+    priceRange: [0, 1000],
   });
 
   // Fetch items on component mount
@@ -29,20 +29,29 @@ const InventoryManagement = () => {
   const fetchItems = async () => {
     try {
       const inventoryItems = await getItemsByStoreName(storeName);
-      
+  
       // Apply filters here
       const filteredItems = inventoryItems.filter(item => {
-        const categoryMatch = filters.category ? item.category === filters.category : true;
-        const sizeMatch = filters.size ? item.sizes.split(',').includes(filters.size) : true;
-        const priceMatch = item.price >= filters.priceRange[0] && item.price <= filters.priceRange[1];
+        const categoryMatch = !filters.category || item.category === filters.category;
+        const sizeMatch = !filters.size || item.sizes.split(',').includes(filters.size);
+        const priceMatch =
+          (!filters.priceRange || filters.priceRange.length === 0) ||
+          (item.price >= filters.priceRange[0] && item.price <= filters.priceRange[1]);
+  
         return categoryMatch && sizeMatch && priceMatch;
       });
-
+  
+      console.log("Filtered:");
+      console.log(filteredItems);
+  
       setItems(filteredItems); // Set filtered items
+      console.log("Final:");
+      console.log(filteredItems);
     } catch (err) {
       setError("Failed to fetch inventory items.");
     }
   };
+  
 
   const handleAddItem = async () => {
     try {
@@ -85,7 +94,7 @@ const InventoryManagement = () => {
       setError("Failed to delete item.");
     }
   };
-
+  
   return (
     <div className="container mt-5">
       <h2>Inventory Management</h2>
