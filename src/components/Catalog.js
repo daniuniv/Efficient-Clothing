@@ -113,7 +113,7 @@ const Catalog = () => {
               />
               <div className="card-body">
                 <h5 className="card-title">{product.name}</h5>
-                <p className="card-text text-muted">${product.price}</p>
+                <p className="card-text">${product.price}</p>
                 <button
                   className="btn btn-primary w-100"
                   onClick={() => navigate(`/product/${product.id}`)}

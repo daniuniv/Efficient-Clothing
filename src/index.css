@@ -116,6 +116,15 @@ body.dark-mode .price-range .form-range {
   border:transparent;
 }
 
+/* Default (Light Mode) */
+.price-text {
+  color: grey; /* Default color for light mode */
+}
+
+/* Dark Mode */
+.dark-mode .price-text {
+  color: white; /* White text for dark mode */
+}
 
 
 
