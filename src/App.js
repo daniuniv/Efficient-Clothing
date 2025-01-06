@@ -10,12 +10,13 @@ import Reports from "./components/Reports";
 import Catalog from "./components/Catalog";
 import ProductDetail from "./components/ProductDetail";
 import Layout from "./components/Layout";
+import CustomerNavigation from './CustomerNavigation'; // Updated import
 
 function App() {
   return (
     <Router>
+      <CustomerNavigation /> {/* Include Customer Navigation */}
       <Layout>
-        {/* Routes */}
         <Routes>
           {/* Login and Register */}
           <Route path="/login" element={<Login />} />
