@@ -11,6 +11,7 @@ import Catalog from "./components/Catalog";
 import ProductDetail from "./components/ProductDetail";
 import Layout from "./components/Layout";
 import CustomerNavigation from './CustomerNavigation'; // Updated import
+import CartView from './components/CartView'; // Add this import
 
 function App() {
   return (
@@ -35,6 +36,8 @@ function App() {
 
           {/* Default */}
           <Route path="/" element={<Login />} />
+          {/*View Cart*/}
+          <Route path="/cart" element={<CartView />} />
         </Routes>
       </Layout>
     </Router>

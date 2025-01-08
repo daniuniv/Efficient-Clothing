@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../firebaseConfig';
-import { doc, getDoc, setDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import Rating from '@mui/material/Rating';
 import Box from '@mui/material/Box';
@@ -53,7 +53,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = async () => {
     if (!auth.currentUser) {
-      console.log('User not logged in');
+      alert('You must be logged in to add items to the cart.');
       return;
     }
 
@@ -73,13 +73,27 @@ const ProductDetail = () => {
       createdAt: new Date(),
     };
 
+    // Log the item being added for debugging purposes
+    console.log('Adding item to cart:', newCartItem);
+
     // Add to the Cart collection
     try {
-      await setDoc(doc(collection(db, 'cart'), `${userId}-${productId}-${size}`), newCartItem);
-      setConfirmation('Product added to cart');
+      // Check if the item already exists in the cart
+      const cartRef = collection(db, 'cart');
+      const q = query(cartRef, where('userId', '==', userId), where('productId', '==', product.id), where('size', '==', size));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        alert('This item is already in your cart.');
+        return;
+      }
+
+      await setDoc(doc(collection(db, 'cart'), `${userId}-${product.id}-${size}`), newCartItem);
+      setConfirmation('Product added to cart!');
       setTimeout(() => setConfirmation(null), 3000); // Clear confirmation after 3 seconds
     } catch (error) {
       console.error('Error adding product to cart: ', error);
+      alert('There was an error adding the product to your cart.');
     }
   };
 
