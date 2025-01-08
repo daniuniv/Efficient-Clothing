@@ -13,6 +13,7 @@ import Layout from "./components/Layout";
 import CustomerNavigation from './CustomerNavigation'; // Updated import
 import CartView from './components/CartView'; // Add this import
 import Checkout from './components/Checkout'; // Add this import for Checkout page
+import ViewOrders from "./components/ViewOrders";
 
 function App() {
   return (
@@ -41,6 +42,9 @@ function App() {
           {/* Cart and Checkout */}
           <Route path="/cart" element={<CartView />} />
           <Route path="/checkout" element={<Checkout />} /> {/* Add Checkout route */}
+
+          {/* Customer view orders status */}
+          <Route path="/your-orders" element={<ViewOrders/>} /> 
 
         </Routes>
       </Layout>

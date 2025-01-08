@@ -95,6 +95,11 @@ const CustomerNavigation = () => {
               View Cart
             </Link>
           </MenuItem>
+          <MenuItem onClick={handleClose}>
+            <Link to="/your-orders" style={{ textDecoration: 'none', color: 'white' }}>
+              View Orders
+            </Link>
+          </MenuItem>
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
       </Toolbar>

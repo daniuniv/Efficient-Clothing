@@ -69,6 +69,7 @@ const Checkout = () => {
       size: item.size || '', // Default to empty string if not set
       productId: item.productId || '', // Default to empty string if not set
       image: item.image || '', // Default to empty string if not set
+      storeName: item.storeName || '',
     }));
 
     // Check if all fields are valid
@@ -77,19 +78,45 @@ const Checkout = () => {
       return;
     }
 
+    //console.log(items[0]);
+    
+    const groupedItems = items.reduce((acc, item) => {
+        if (!acc[item.storeName]) {
+            acc[item.storeName] = [];
+        }
+        acc[item.storeName].push(item);
+        return acc;
+    }, {});
+
     const newOrder = {
       customerId: userId,
       deliveryAddress,
-      items,
       orderId,
       status: 'Pending',
-      storeName: 'My Store', // You can dynamically get the store name if needed
-      totalAmount,
+      subOrders: Object.keys(groupedItems).map(storeName => ({
+        storeName,
+        items: groupedItems[storeName],
+        customerId: userId,
+        deliveryAddress: deliveryAddress,
+        orderId: orderId,
+        status: 'Pending',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        totalAmount: items.reduce((acc,item) => item.price + acc, 0),
+        paymentMethod: paymentMethod,
+    })),
+    
+      
+      //items,
+      //storeName: '', // items.map(item => item.storeName) You can dynamically get the store name if needed
+      //totalAmount,
+      
       createdAt: new Date(),
       updatedAt: new Date(),
       paymentMethod,
     };
-
+    
+    
     console.log('New Order Data:', newOrder); // Log the order data for debugging
 
     // Add to Orders collection
@@ -110,7 +137,7 @@ const Checkout = () => {
 
       // Show success message
       alert('Your order has been confirmed!');
-      navigate('/'); // Navigate back to the home page or catalog
+      navigate('/your-orders'); // Navigate back to the home page or catalog
     } catch (err) {
       console.error('Error placing order:', err);
       setError(`There was an error placing your order: ${err.message || err}`);

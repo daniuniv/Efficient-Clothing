@@ -71,6 +71,7 @@ const ProductDetail = () => {
       quantity: quantity,
       userId: userId,
       createdAt: new Date(),
+      storeName: product.storeName,
     };
 
     // Log the item being added for debugging purposes

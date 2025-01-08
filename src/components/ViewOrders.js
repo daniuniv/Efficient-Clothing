@@ -3,13 +3,13 @@ import { db } from "../firebaseConfig";
 import { collection, getDocs, doc, getDoc, addDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-const CustomerOrders = () => {
+const ViewOrders = () => {
   const [orders, setOrders] = useState([]);
   const [storeManagers, setStoreManagers] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true); // For loading state
   const auth = getAuth(); // Firebase authentication instance
-  const storeName = localStorage.getItem("storeName"); // Get the store name of the logged-in user
+  const userId = auth.currentUser.uid;
 
   // Fetch orders from Firestore
   const fetchOrders = async () => {
@@ -25,7 +25,7 @@ const CustomerOrders = () => {
     
       console.log(ordersList);
 
-      const filteredOrders = ordersList.map(order => order.subOrders).flat().filter(order => order.storeName.includes(storeName));
+      const filteredOrders = ordersList.map(order => order.subOrders).flat().filter(order => order.customerId.includes(userId));
      
       console.log(filteredOrders);
       
@@ -158,4 +158,4 @@ const CustomerOrders = () => {
   );
 };
 
-export default CustomerOrders;
+export default ViewOrders;
