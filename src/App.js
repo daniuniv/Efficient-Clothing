@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./components/Register";
 import Login from "./components/Login";
@@ -12,6 +12,7 @@ import ProductDetail from "./components/ProductDetail";
 import Layout from "./components/Layout";
 import CustomerNavigation from './CustomerNavigation'; // Updated import
 import CartView from './components/CartView'; // Add this import
+import Checkout from './components/Checkout'; // Add this import for Checkout page
 
 function App() {
   return (
@@ -36,8 +37,11 @@ function App() {
 
           {/* Default */}
           <Route path="/" element={<Login />} />
-          {/*View Cart*/}
+          
+          {/* Cart and Checkout */}
           <Route path="/cart" element={<CartView />} />
+          <Route path="/checkout" element={<Checkout />} /> {/* Add Checkout route */}
+
         </Routes>
       </Layout>
     </Router>
