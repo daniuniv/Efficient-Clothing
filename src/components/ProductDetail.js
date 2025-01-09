@@ -234,6 +234,7 @@ const ProductDetail = () => {
           <p>{product.description}</p>
           <h3>${product.price}</h3>
           <p><strong>Available Sizes:</strong> {sizes.join(', ')}</p>
+          <p><strong>Available Quantity:</strong> {product?.stock || 'Not available'}</p>
 
           {/* Size Selector */}
           <select value={size} onChange={(e) => setSize(e.target.value)} className="form-control mb-2">

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebaseConfig';
 import { getAuth } from 'firebase/auth';
-import { collection, query, where, getDocs, writeBatch, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, writeBatch, doc, getFirestore, FieldValue, increment} from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
+
 
 const Checkout = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -130,6 +131,12 @@ const Checkout = () => {
       cartItems.forEach(item => {
         const cartDocRef = doc(db, 'cart', item.id);
         batch.delete(cartDocRef);
+
+        // Update the product stock in the inventory
+        const productRef = doc(db, 'inventory', item.productId);
+        batch.update(productRef, {
+          stock: increment(-item.quantity), // Decrease stock by the quantity in the cart
+        });
       });
 
       // Commit batch operations
