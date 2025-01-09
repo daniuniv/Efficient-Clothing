@@ -57,7 +57,7 @@ const CustomerNavigation = () => {
     <AppBar position="sticky" sx={{ backgroundColor: '#212121' }}> {/* Slightly lighter black */}
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Typography variant="h6" sx={{ color: 'white' }}>
-          Magazinu asta super jmeker de haine gen
+          Efficient Clothing
         </Typography>
         
         {/* Burger Icon on the right */}
