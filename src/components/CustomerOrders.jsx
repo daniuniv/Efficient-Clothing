@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebaseConfig";
-import { collection, getDocs, doc, getDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const CustomerOrders = () => {
@@ -22,13 +22,7 @@ const CustomerOrders = () => {
       }));
 
       // Filter orders by the store name
-    
-      console.log(ordersList);
-
       const filteredOrders = ordersList.map(order => order.subOrders).flat().filter(order => order.storeName.includes(storeName));
-     
-      console.log(filteredOrders);
-      
       setOrders(filteredOrders);
     } catch (err) {
       console.error("Error fetching orders:", err.message);
@@ -56,10 +50,8 @@ const CustomerOrders = () => {
   const notifyStoreManager = async (order) => {
     try {
       storeManagers.forEach(async (managerId) => {
-        console.log("Notifying manager with ID: ", managerId);
         const userRef = doc(db, "users", managerId);
         const managerData = await getDoc(userRef);
-        console.log("Manager Data: ", managerData.data());
 
         const notificationsRef = collection(db, "notifications");
         await addDoc(notificationsRef, {
@@ -68,12 +60,62 @@ const CustomerOrders = () => {
           orderId: order.orderId,
           timestamp: new Date(),
         });
-        console.log("Notification added successfully");
       });
     } catch (err) {
       console.error("Error notifying store manager:", err.message);
     }
   };
+
+  // Handle status change
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      // Get the order reference
+      const orderRef = doc(db, "orders", orderId);
+      
+      // Fetch the order document to update the specific subOrder
+      const orderSnapshot = await getDoc(orderRef);
+      if (orderSnapshot.exists()) {
+        const orderData = orderSnapshot.data();
+  
+        // Find the subOrder to update
+        let subOrderId=orderId;
+        const subOrderIndex = orderData.subOrders.findIndex(subOrder => subOrder.orderId === subOrderId);
+        if (subOrderIndex !== -1) {
+          // Update the status of the specific subOrder
+          const updatedSubOrders = [...orderData.subOrders];
+          updatedSubOrders[subOrderIndex] = {
+            ...updatedSubOrders[subOrderIndex],
+            status: newStatus,
+          };
+  
+          // Update the entire order with the new subOrders array
+          await updateDoc(orderRef, {
+            subOrders: updatedSubOrders,
+          });
+  
+          // Update the order status in local state (for UI)
+          setOrders((prevOrders) =>
+            prevOrders.map((order) =>
+              order.orderId === orderId
+                ? {
+                    ...order,
+                    subOrders: order.subOrders.map((subOrder) =>
+                      subOrder.id === subOrderId
+                        ? { ...subOrder, status: newStatus }
+                        : subOrder
+                    ),
+                  }
+                : order
+            )
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Error updating subOrder status:", err.message);
+      setError("Failed to update subOrder status.");
+    }
+  };
+  
 
   useEffect(() => {
     fetchOrders();
@@ -101,6 +143,7 @@ const CustomerOrders = () => {
                   <th>Items</th>
                   <th>Total Amount</th>
                   <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -131,7 +174,6 @@ const CustomerOrders = () => {
                                   marginRight: "10px",
                                   marginBottom: '10px',
                                 }}
-                                
                               />
                               {item.name} (x{item.quantity}) - ${item.price.toFixed(2)}
                             </li>
@@ -147,6 +189,18 @@ const CustomerOrders = () => {
 
                     {/* Status */}
                     <td>{order.status || "N/A"}</td>
+
+                    {/* Action - Change Status */}
+                    <td>
+                      <select
+                        value={order.status || "N/A"}
+                        onChange={(e) => handleStatusChange(order.orderId, e.target.value)}
+                      >
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
+                    </td>
                   </tr>
                 ))}
               </tbody>
