@@ -102,8 +102,8 @@ const Checkout = () => {
         status: 'Pending',
         createdAt: new Date(),
         updatedAt: new Date(),
-        totalAmount: items.reduce((acc,item) => item.price + acc, 0),
-        paymentMethod: paymentMethod,
+        totalAmount: groupedItems[storeName].reduce((acc, item) => acc + item.price * item.quantity, 0),
+        paymentMethod,
     })),
     
       

@@ -131,7 +131,7 @@ const ViewOrders = () => {
                                   marginRight: "10px",
                                   marginBottom: "10px",
                                 }}
-                                alt={item.name}
+                                
                               />
                               {item.name} (x{item.quantity}) - $
                               {item.price.toFixed(2)}

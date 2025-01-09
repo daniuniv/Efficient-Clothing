@@ -110,6 +110,7 @@ const ProductDetail = () => {
     const userId = auth.currentUser.uid; // Get logged-in user ID
     const newCartItem = {
       name: product.name,
+      image: product.images,
       price: product.price,
       productId: product.id,
       size: size,
