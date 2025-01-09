@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore'; // Import Firestore functions
 import { auth, db } from '../firebaseConfig'; // Ensure db is exported from firebaseConfig
 import { useNavigate, Link } from 'react-router-dom';
@@ -9,6 +9,31 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate(); // Initialize useNavigate
+  const [user, setUser] = useState(null); // Initialize the user state
+
+  // Check if the user is already logged in and redirect if necessary
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUser(user); // Set the user state if authenticated
+        // User is logged in, navigate to the appropriate dashboard
+        const userDoc = getDoc(doc(db, 'users', user.uid));
+        userDoc.then((docSnapshot) => {
+          const userData = docSnapshot.data();
+          if (userData.role === 'storeManager') {
+            navigate('/store-manager-dashboard');
+          } else if (userData.role === 'customer') {
+            navigate('/customer-dashboard');
+          }
+        });
+      } else {
+        setUser(null); // Set user to null if not logged in
+      }
+    });
+
+    // Cleanup the listener when component unmounts
+    return () => unsubscribe();
+  }, [navigate]);
 
   // Handle Google Login
   const handleGoogleLogin = async () => {

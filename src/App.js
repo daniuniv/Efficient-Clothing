@@ -11,6 +11,7 @@ import Catalog from "./components/Catalog";
 import ProductDetail from "./components/ProductDetail";
 import Layout from "./components/Layout";
 import CustomerNavigation from './CustomerNavigation'; // Updated import
+import StoreManagerNavigation from './StoreManagerNavigation'; // Updated import
 import CartView from './components/CartView'; // Add this import
 import Checkout from './components/Checkout'; // Add this import for Checkout page
 import ViewOrders from "./components/ViewOrders";
@@ -19,6 +20,7 @@ function App() {
   return (
     <Router>
       <CustomerNavigation /> {/* Include Customer Navigation */}
+      <StoreManagerNavigation /> {/* Include StoreManager Navigation */}
       <Layout>
         <Routes>
           {/* Login and Register */}
