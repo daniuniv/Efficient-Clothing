@@ -193,31 +193,6 @@ const InventoryManagement = () => {
         </button>
       </div>
 
-      {/* Filter UI */}
-      <div className="filters">
-        <select onChange={(e) => setFilters({...filters, category: e.target.value})}>
-          <option value="">All Categories</option>
-          <option value="Shirt">Shirts</option>
-          <option value="Pants">Pants</option>
-          <option value="Dress">Dresses</option>
-        </select>
-
-        <select onChange={(e) => setFilters({...filters, size: e.target.value})}>
-          <option value="">All Sizes</option>
-          <option value="S">Small</option>
-          <option value="M">Medium</option>
-          <option value="L">Large</option>
-        </select>
-
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={filters.priceRange[1]}
-          onChange={(e) => setFilters({...filters, priceRange: [filters.priceRange[0], e.target.value]})}
-        />
-      </div>
-
       {/* Inventory List */}
       <h4>Inventory</h4>
       <table className="table table-bordered">
@@ -246,7 +221,7 @@ const InventoryManagement = () => {
               <td>{item.category}</td>
               <td>${item.price}</td>
               <td>{item.stock}</td>
-              <td>{item.sizes}</td>
+              <td>{item.sizes.join(', ')}</td>
               <td>
                 <button className="btn btn-sm btn-warning" onClick={() => setEditingItem(item)}>
                   Edit
