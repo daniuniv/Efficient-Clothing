@@ -61,7 +61,7 @@ const ProductDetail = () => {
 
     // Define fetchReviews inside useEffect
     const fetchReviews = async () => {
-      const reviewsRef = collection(db, 'review');
+      const reviewsRef = collection(db, 'reviews');
       const q = query(reviewsRef, where('itemId', '==', productId));
       const querySnapshot = await getDocs(q);
 
