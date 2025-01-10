@@ -10,12 +10,13 @@ import {
   where,
   getDocs,
   serverTimestamp,
-  Timestamp,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import Rating from '@mui/material/Rating';
 import Box from '@mui/material/Box';
 import StarIcon from '@mui/icons-material/Star';
+import { Carousel } from 'react-bootstrap'; // Bootstrap Carousel import
+import { Button } from '@mui/material'; // MUI Buttons
 
 const labels = {
   0.5: 'Useless',
@@ -35,17 +36,17 @@ function getLabelText(value) {
 }
 
 const ProductDetail = () => {
-  const { productId } = useParams(); // Get the productId from URL params
+  const { productId } = useParams();
   const [product, setProduct] = useState(null);
-  const [value, setValue] = useState(2); // Rating value
+  const [value, setValue] = useState(2);
   const [hover, setHover] = useState(-1);
-  const [comment, setComment] = useState(''); // Comment value
-  const [size, setSize] = useState(''); // State for selected size
-  const [quantity, setQuantity] = useState(1); // State for selected quantity
-  const [confirmation, setConfirmation] = useState(null); // State for confirmation message
-  const [averageRating, setAverageRating] = useState(null); // State for average rating
-  const [reviews, setReviews] = useState([]); // State for reviews
-  const auth = getAuth(); // Firebase authentication instance
+  const [comment, setComment] = useState('');
+  const [size, setSize] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [confirmation, setConfirmation] = useState(null);
+  const [averageRating, setAverageRating] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const auth = getAuth();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -59,14 +60,10 @@ const ProductDetail = () => {
       }
     };
 
-    // Define fetchReviews inside useEffect
     const fetchReviews = async () => {
       const reviewsRef = collection(db, 'reviews');
       const q = query(reviewsRef, where('itemId', '==', productId));
       const querySnapshot = await getDocs(q);
-
-      console.log('Fetching reviews...');
-      console.log(querySnapshot.size, 'reviews found for productId:', productId);
 
       let reviewData = [];
       let totalRating = 0;
@@ -79,12 +76,10 @@ const ProductDetail = () => {
         reviewCount++;
       });
 
-      console.log('Total reviews fetched:', reviewData.length);
-
       if (reviewCount > 0) {
         setAverageRating(totalRating / reviewCount);
       } else {
-        setAverageRating(0); // No reviews yet
+        setAverageRating(0);
       }
 
       setReviews(reviewData);
@@ -92,7 +87,7 @@ const ProductDetail = () => {
 
     if (productId) {
       fetchProduct();
-      fetchReviews(); // Fetch reviews after product data
+      fetchReviews();
     }
   }, [productId]);
 
@@ -107,7 +102,7 @@ const ProductDetail = () => {
       return;
     }
 
-    const userId = auth.currentUser.uid; // Get logged-in user ID
+    const userId = auth.currentUser.uid;
     const newCartItem = {
       name: product.name,
       image: product.images,
@@ -120,12 +115,7 @@ const ProductDetail = () => {
       storeName: product.storeName,
     };
 
-    // Log the item being added for debugging purposes
-    console.log('Adding item to cart:', newCartItem);
-
-    // Add to the Cart collection
     try {
-      // Check if the item already exists in the cart
       const cartRef = collection(db, 'cart');
       const q = query(cartRef, where('userId', '==', userId), where('productId', '==', product.id), where('size', '==', size));
       const querySnapshot = await getDocs(q);
@@ -137,9 +127,9 @@ const ProductDetail = () => {
 
       await setDoc(doc(collection(db, 'cart'), `${userId}-${product.id}-${size}`), newCartItem);
       setConfirmation('Product added to cart!');
-      setSize(''); // Reset size selection after adding to cart
-      setQuantity(1); // Reset quantity after adding to cart
-      setTimeout(() => setConfirmation(null), 3000); // Clear confirmation after 3 seconds
+      setSize('');
+      setQuantity(1);
+      setTimeout(() => setConfirmation(null), 3000);
     } catch (error) {
       console.error('Error adding product to cart: ', error);
       alert('There was an error adding the product to your cart.');
@@ -151,14 +141,14 @@ const ProductDetail = () => {
       alert('You must be logged in to submit a review.');
       return;
     }
-  
-    const userId = auth.currentUser.uid; // Get the current user's ID
+
+    const userId = auth.currentUser.uid;
     const userName = auth.currentUser.email;
     if (!value || value < 0.5) {
       alert('Please provide a valid rating.');
       return;
     }
-  
+
     const newReviewData = {
       rating: value,
       comment: comment.trim(),
@@ -168,38 +158,33 @@ const ProductDetail = () => {
       itemId: productId,
       reviewId: `${userId}-${productId}`,
     };
-  
+
     try {
       const reviewRef = doc(db, 'reviews', newReviewData.reviewId);
       await setDoc(reviewRef, newReviewData);
-      setComment(''); // Clear the comment input
+      setComment('');
       alert('Thank you for your feedback!');
       const reviewsRef = collection(db, 'reviews');
       const q = query(reviewsRef, where('itemId', '==', productId));
       const querySnapshot = await getDocs(q);
-  
-      console.log('Fetching reviews...');
-      console.log(querySnapshot.size, 'reviews found for productId:', productId);
-  
+
       let fetchedReviews = [];
       let totalRating = 0;
       let reviewCount = 0;
-  
+
       querySnapshot.forEach((doc) => {
         const review = doc.data();
         fetchedReviews.push(review);
         totalRating += review.rating;
         reviewCount++;
       });
-  
-      console.log('Total reviews fetched:', fetchedReviews.length);
-  
+
       if (reviewCount > 0) {
         setAverageRating(totalRating / reviewCount);
       } else {
-        setAverageRating(0); // No reviews yet
+        setAverageRating(0);
       }
-  
+
       setReviews(fetchedReviews);
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -211,7 +196,6 @@ const ProductDetail = () => {
     return <div>Loading...</div>;
   }
 
-  // Ensure sizes is a string before splitting it
   let sizes = [];
   if (typeof product.sizes === 'string') {
     sizes = product.sizes.split(',').map((size) => size.trim());
@@ -219,105 +203,218 @@ const ProductDetail = () => {
     sizes = product.sizes.map((size) => size.trim());
   }
 
-  const isOutOfStock = product?.stock <= 0;
   return (
     <div className="container mt-5">
       <div className="row">
         <div className="col-md-6">
-          <img
-            src={product.images || 'https://via.placeholder.com/320'}
-            alt={product.name}
-            className="img-fluid"
-          />
-        </div>
-        <div className="col-md-6">
-          <h2>{product.name}</h2>
-          <p>{product.description}</p>
-          <h3>${product.price}</h3>
-          <p><strong>Available Sizes:</strong> {sizes.join(', ')}</p>
-          <p><strong>Available Quantity:</strong> {product?.stock || 'Not available'}</p>
-
-          {/* Size Selector */}
-          <select value={size} onChange={(e) => setSize(e.target.value)} className="form-control mb-2">
-            <option value="">Select Size</option>
-            {sizes.map((sizeOption) => (
-              <option key={sizeOption} value={sizeOption}>
-                {sizeOption}
-              </option>
+          <Carousel>
+            {product.images && product.images.split(',').map((image, index) => (
+              <Carousel.Item key={index}>
+                <img
+                  src={image || 'https://via.placeholder.com/785x1003'}
+                  alt={product.name}
+                  className="d-block w-100"
+                  style={{
+                    height: '1003px', 
+                    width: '785px',
+                    objectFit: 'cover',
+                  }}
+                />
+              </Carousel.Item>
             ))}
-          </select>
+          </Carousel>
 
-          {/* Quantity Selector */}
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, e.target.value))}
-            className="form-control mb-2"
-            min="1"
-          />
-
-          <button
-            className="btn btn-primary mt-3"
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}  // Disable only if the product is out of stock
-            style={{ backgroundColor: isOutOfStock ? '#d3d3d3' : '#007bff' }}  // Grey out button when disabled
-          >
-            Add to Cart
-          </button>
-
-          {/* Confirmation Message */}
-          {confirmation && <div className="alert alert-success mt-3">{confirmation}</div>}
-        </div>
-      </div>
-
-      {/* Rating and Comment Section */}
-      <div className="mt-5">
-        <h4>Rate and Review this Product</h4>
-        <Rating
-          name="hover-feedback"
-          value={value}
-          precision={0.5}
-          getLabelText={getLabelText}
-          onChange={(event, newValue) => {
-            setValue(newValue);
-          }}
-          onChangeActive={(event, newHover) => {
-            setHover(newHover);
-          }}
-          emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
-        />
-        {value !== null && <Box sx={{ ml: 2 }}>{labels[hover !== -1 ? hover : value]}</Box>}
-
-        <textarea
-          className="form-control mt-3"
-          placeholder="Write your comment here..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-        />
-
-        <button className="btn btn-success mt-3" onClick={handleRatingSubmit}>
-          Submit Review
-        </button>
-      </div>
-
-      {/* Average Rating and Reviews */}
-      <div className="mt-5">
-        <h4>Average Rating: {averageRating ? averageRating.toFixed(1) : 'No ratings yet'}</h4>
-        {reviews.length > 0 ? (
-          <ul className="list-unstyled">
+          {/* Customer Reviews Section */}
+          <h4 className="mt-5">Customer Reviews</h4>
+          <p><strong>Average Rating:</strong> {averageRating.toFixed(2)} / 5</p>
+          <div>
             {reviews.map((review) => (
-              <li key={review.reviewId}>
-                <div>
-                  <strong>{review.customerName}</strong> - {review.createdAt instanceof Timestamp ? new Date(review.createdAt.seconds * 1000).toLocaleDateString() : 'Date not available'}
-                </div>
+              <div key={review.reviewId} className="border-bottom pb-3 mb-3">
                 <Rating value={review.rating} readOnly />
+                <p><strong>{review.customerName}</strong> says:</p>
                 <p>{review.comment}</p>
-              </li>
+                <p className="text-muted">{new Date(review.createdAt.seconds * 1000).toLocaleDateString()}</p>
+              </div>
             ))}
-          </ul>
-        ) : (
-          <p>No reviews yet. Be the first to leave a review!</p>
-        )}
+          </div>
+        </div>
+
+        <div className="col-md-6">
+          <h2 style={{ fontFamily: '"Gotham", sans-serif', fontWeight: 'bold', fontStyle: 'italic', fontSize: '25px', lineHeight: '24px', textTransform: 'uppercase' }}>
+            {product.name}
+          </h2>
+          <p>{product.description}</p>
+          <h3 style={{ fontWeight: 'bold', fontSize: '24px', color: '#333' }}>${product.price}</h3>
+
+          <p className="mb-3"><strong>Available Quantity:</strong> {product?.stock === 0 ? 'Out of stock' : product?.stock}</p>
+
+          {product?.stock === 0 && <div className="alert alert-danger">This item is currently out of stock.</div>}
+
+          <div className="mb-3">
+  <strong>Available Sizes:</strong>
+  <div className="d-flex flex-wrap">
+    {sizes.map((sizeOption) => (
+      <Button
+        key={sizeOption}
+        onClick={() => setSize(sizeOption)}
+        disabled={product?.stock === 0}
+        className={`variant-size-item ${size === sizeOption ? 'selected' : ''}`}
+        style={{
+          margin: '5px',
+          minWidth: '72px',
+          height: '35px',
+          fontSize: '12px',
+          borderRadius: '0.45rem',
+          textTransform: 'capitalize',
+          backgroundColor: product?.stock === 0 
+            ? '#B0B0B0' 
+            : (size === sizeOption ? '#47b49c' : '#333'),
+          color: '#fff',
+          transition: 'background-color 0.2s ease',
+          border: '2px solid #fff',
+          outline: 'none',
+          boxShadow: '0 0 3px rgba(255, 255, 255, 0.2)',
+        }}
+        onMouseEnter={(e) => {
+          if (product?.stock > 0) {
+            e.target.style.backgroundColor = '#a0a0a0'; // Light gray hover color
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (product?.stock > 0) {
+            e.target.style.backgroundColor = size === sizeOption ? '#47b49c' : '#333';
+          }
+        }}
+      >
+        {sizeOption}
+      </Button>
+    ))}
+  </div>
+</div>
+
+
+          <div className="d-flex align-items-center mb-3">
+  <button
+    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+    style={{
+      backgroundColor: '#f5f5f5',
+      color: '#333',
+      width: '40px',
+      height: '40px',
+      fontSize: '20px',
+      borderRadius: '50%',
+      border: 'none',
+      marginRight: '10px',
+    }}
+    disabled={product?.stock === 0} // Disable button if out of stock
+  >
+    -
+  </button>
+  <span
+    style={{
+      fontSize: '18px',
+      fontWeight: 'bold',
+      margin: '0 10px',
+    }}
+  >
+    {quantity}
+  </span>
+  <button
+    onClick={() => setQuantity(Math.min(product?.stock, quantity + 1))}
+    style={{
+      backgroundColor: '#f5f5f5',
+      color: '#333',
+      width: '40px',
+      height: '40px',
+      fontSize: '20px',
+      borderRadius: '50%',
+      border: 'none',
+      marginLeft: '10px',
+    }}
+    disabled={product?.stock === 0} // Disable button if out of stock
+  >
+    +
+  </button>
+
+  <button
+    className="btn mt-3"
+    style={{
+      backgroundColor: '#5be9c5',
+      color: '#fff',
+      borderRadius: '5px',
+      fontSize: '18px',
+      padding: '10px 20px',
+      marginLeft: '20px',
+      width: '303px',
+      height: '50px',
+      border: 'none',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      transition: 'background-color 0.3s ease',
+    }}
+    onMouseEnter={(e) => {
+      e.target.style.backgroundColor = '#47b49c';
+    }}
+    onMouseLeave={(e) => {
+      e.target.style.backgroundColor = '#5be9c5';
+    }}
+    onClick={handleAddToCart}
+    disabled={product?.stock === 0 || quantity === 0} // Disable if out of stock
+  >
+    Add to Cart
+  </button>
+</div>
+
+
+          {confirmation && (
+            <div className="alert alert-success mt-3">{confirmation}</div>
+          )}
+
+          {/* Rating Component */}
+          <h4 className="mt-4">Rate this Product</h4>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Rating
+              name="rating"
+              value={value}
+              onChange={(event, newValue) => setValue(newValue)}
+              onChangeActive={(event, newHover) => setHover(newHover)}
+              precision={0.5}
+              icon={<StarIcon fontSize="inherit" />}
+            />
+            {value !== null && (
+              <Box sx={{ ml: 2 }}>{getLabelText(hover !== -1 ? hover : value)}</Box>
+            )}
+          </Box>
+          
+          {/* Comment Section */}
+          <textarea
+            placeholder="Leave a comment"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            style={{
+              width: '100%',
+              height: '100px',
+              padding: '10px',
+              borderRadius: '5px',
+              marginTop: '10px',
+              borderColor: '#ccc',
+              fontSize: '14px',
+            }}
+          ></textarea>
+          <button
+            className="btn btn-light mt-3"
+            style={{
+              backgroundColor: '#F0E68C',
+              color: '#333',
+              padding: '10px 20px',
+              borderRadius: '5px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onClick={handleRatingSubmit}
+          >
+            Submit Review
+          </button>
+        </div>
       </div>
     </div>
   );
