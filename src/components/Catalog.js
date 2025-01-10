@@ -11,7 +11,8 @@ const Catalog = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(1000);
-  const [hoveredProductId, setHoveredProductId] = useState(null); // Track hover state
+  const [sortOrder, setSortOrder] = useState('');
+  const [hoveredProductId, setHoveredProductId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,9 +20,10 @@ const Catalog = () => {
       let querySnapshot = await getDocs(collection(db, 'inventory'));
       let productList = querySnapshot.docs.map(doc => ({
         ...doc.data(),
-        id: doc.id, // Get the Firestore document ID
+        id: doc.id,
       }));
-
+    
+      // Apply category filter
       if (selectedCategory) {
         if (selectedCategory === "Pants") {
           productList = productList.filter(product =>
@@ -35,18 +37,35 @@ const Catalog = () => {
           productList = productList.filter(product => product.category === selectedCategory);
         }
       }
-
+    
+      // Apply size filter
       if (selectedSize) {
-        productList = productList.filter(product => product.sizes.split(',').includes(selectedSize));
+        productList = productList.filter(product => {
+          if (Array.isArray(product.sizes)) {
+            return product.sizes.includes(selectedSize); // Check if sizes is an array
+          } else if (typeof product.sizes === 'string') {
+            return product.sizes.split(',').includes(selectedSize); // If sizes is a string, split it
+          }
+          return false; // In case sizes is neither an array nor a string
+        });
       }
-
+    
+      // Apply price range filter
       productList = productList.filter(product => product.price >= minPrice && product.price <= maxPrice);
-
+    
+      // Sort products based on selected sort order
+      if (sortOrder === 'asc') {
+        productList.sort((a, b) => a.price - b.price); // Ascending
+      } else if (sortOrder === 'desc') {
+        productList.sort((a, b) => b.price - a.price); // Descending
+      }
+    
       setProducts(productList);
     };
+    
 
     fetchProducts();
-  }, [selectedCategory, selectedSize, minPrice, maxPrice]);
+  }, [selectedCategory, selectedSize, minPrice, maxPrice, sortOrder]);
 
   return (
     <div className="container mt-5">
@@ -84,6 +103,17 @@ const Catalog = () => {
             </select>
           </div>
           <div className="col-md-3">
+            <select
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="form-select mb-3"
+              aria-label="Sort by price"
+            >
+              <option value="">Sort by Price</option>
+              <option value="asc">Price: Low to High</option>
+              <option value="desc">Price: High to Low</option>
+            </select>
+          </div>
+          <div className="col-md-3">
             <DualSlider minPrice={minPrice} setMinPrice={setMinPrice} maxPrice={maxPrice} setMaxPrice={setMaxPrice} />
             <div className="d-flex justify-content-between">
               <input
@@ -102,19 +132,6 @@ const Catalog = () => {
               />
             </div>
           </div>
-          <div className="col-md-3 d-flex align-items-center">
-            <button
-              className="btn btn-secondary w-100"
-              onClick={() => {
-                setSelectedCategory('');
-                setSelectedSize('');
-                setMinPrice(0);
-                setMaxPrice(1000);
-              }}
-            >
-              Clear Filters
-            </button>
-          </div>
         </div>
       </div>
 
@@ -129,6 +146,9 @@ const Catalog = () => {
             const images = product.images.split(',');
             const firstImage = images[0];
             const secondImage = images[1] || firstImage;
+
+            // Conditionally set objectPosition based on category
+            const objectPosition = ['Pants', 'Sweatpants', 'Jeans'].includes(product.category) ? 'bottom' : 'top';
 
             return (
               <div key={product.id} className="col d-flex justify-content-center">
@@ -152,7 +172,7 @@ const Catalog = () => {
                         width: '100%',
                         height: '370px',
                         objectFit: 'cover',
-                        objectPosition: 'top',
+                        objectPosition: objectPosition, // Apply dynamic objectPosition
                         transition: '0.3s ease-in-out',
                       }}
                       referrerPolicy="no-referrer"
