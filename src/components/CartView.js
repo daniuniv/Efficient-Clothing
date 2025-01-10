@@ -75,7 +75,7 @@ const CartView = () => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <CircularProgress />
+        <CircularProgress sx={{ color: '#5be9c5' }} />
       </Box>
     );
   }

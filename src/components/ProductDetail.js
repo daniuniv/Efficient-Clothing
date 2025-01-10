@@ -17,6 +17,7 @@ import Box from '@mui/material/Box';
 import StarIcon from '@mui/icons-material/Star';
 import { Carousel } from 'react-bootstrap'; // Bootstrap Carousel import
 import { Button } from '@mui/material'; // MUI Buttons
+import { CircularProgress } from '@mui/material';
 
 const labels = {
   0.5: 'Useless',
@@ -193,8 +194,13 @@ const ProductDetail = () => {
   };
 
   if (!product) {
-    return <div>Loading...</div>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress sx={{ color: '#5be9c5' }} />
+      </Box>
+    );
   }
+  
 
   let sizes = [];
   if (typeof product.sizes === 'string') {
@@ -224,19 +230,27 @@ const ProductDetail = () => {
             ))}
           </Carousel>
 
-          {/* Customer Reviews Section */}
-          <h4 className="mt-5">Customer Reviews</h4>
-          <p><strong>Average Rating:</strong> {averageRating.toFixed(2)} / 5</p>
-          <div>
-            {reviews.map((review) => (
-              <div key={review.reviewId} className="border-bottom pb-3 mb-3">
-                <Rating value={review.rating} readOnly />
-                <p><strong>{review.customerName}</strong> says:</p>
-                <p>{review.comment}</p>
-                <p className="text-muted">{new Date(review.createdAt.seconds * 1000).toLocaleDateString()}</p>
-              </div>
-            ))}
-          </div>
+        {/* Customer Reviews Section */}
+<h4 className="mt-5">Customer Reviews</h4>
+<p>
+  <strong>Average Rating:</strong>{' '}
+  {averageRating !== null ? averageRating.toFixed(2) : 'No ratings yet'} / 5
+</p>
+<div>
+  {reviews.map((review) => (
+    <div key={review.reviewId} className="border-bottom pb-3 mb-3">
+      <Rating value={review.rating} readOnly />
+      <p><strong>{review.customerName}</strong> says:</p>
+      <p>{review.comment}</p>
+      <p className="text-muted">
+        {review.createdAt?.seconds
+          ? new Date(review.createdAt.seconds * 1000).toLocaleDateString()
+          : 'Unknown date'}
+      </p>
+    </div>
+  ))}
+</div>
+
         </div>
 
         <div className="col-md-6">
