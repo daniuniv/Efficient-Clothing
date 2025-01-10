@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; 
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
@@ -16,21 +16,28 @@ const Reports = () => {
   // Fetch Orders Data for Sales Report
   const fetchSalesData = async () => {
     try {
-      const ordersQuery = query(
-        collection(db, "orders"),
-        where("createdAt", ">=", new Date(startDate)),
-        where("createdAt", "<=", new Date(endDate)),
-        where("storeName", "==", storeName) // Filter orders by store name
+      const ordersSnapshot = await getDocs(collection(db, "orders"));
+      const ordersList = ordersSnapshot.docs.map((doc) => doc.data());
+
+      // Extract and filter subOrders by storeName and date range
+      const filteredSubOrders = ordersList
+        .map((order) =>
+          order.subOrders
+            .filter((subOrder) => 
+              subOrder.storeName === storeName &&
+              (!startDate || new Date(subOrder.createdAt.seconds * 1000) >= new Date(startDate)) &&
+              (!endDate || new Date(subOrder.createdAt.seconds * 1000) <= new Date(endDate))
+            )
+        )
+        .flat();
+
+      // Calculate total revenue
+      const revenue = filteredSubOrders.reduce(
+        (sum, subOrder) => sum + (subOrder.totalAmount || 0),
+        0
       );
-      const ordersSnapshot = await getDocs(ordersQuery);
-      const orders = ordersSnapshot.docs.map((doc) => doc.data());
 
-      let revenue = 0;
-      orders.forEach((order) => {
-        revenue += order.totalAmount || 0;
-      });
-
-      setSalesData(orders);
+      setSalesData(filteredSubOrders);
       setTotalRevenue(revenue);
     } catch (err) {
       console.error("Error fetching sales data:", err.message);
@@ -105,7 +112,8 @@ const Reports = () => {
             <thead className="thead-dark">
               <tr>
                 <th>Order ID</th>
-                <th>Customer ID</th>
+                <th>Delivery Address</th>
+                <th>Items</th>
                 <th>Total Amount</th>
                 <th>Status</th>
                 <th>Created At</th>
@@ -113,18 +121,37 @@ const Reports = () => {
             </thead>
             <tbody>
               {salesData.length > 0 ? (
-                salesData.map((order, index) => (
+                salesData.map((subOrder, index) => (
                   <tr key={index}>
-                    <td>{order.orderId || "N/A"}</td>
-                    <td>{order.customerId || "N/A"}</td>
-                    <td>${order.totalAmount ? order.totalAmount.toFixed(2) : "0.00"}</td>
-                    <td>{order.status || "N/A"}</td>
-                    <td>{new Date(order.createdAt.seconds * 1000).toLocaleDateString() || "N/A"}</td>
+                    <td>{subOrder.orderId || "N/A"}</td>
+                    <td>
+                      {subOrder.deliveryAddress
+                        ? `${subOrder.deliveryAddress.street || "N/A"}, ${subOrder.deliveryAddress.city || "N/A"}`
+                        : "N/A"}
+                    </td>
+                    <td>
+                      {subOrder.items && subOrder.items.length > 0 ? (
+                        <ul>
+                          {subOrder.items.map((item, index) => (
+                            <li key={index}>
+                              {item.name} (x{item.quantity}) - ${item.price.toFixed(2)}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        "No items"
+                      )}
+                    </td>
+                    <td>${subOrder.totalAmount ? subOrder.totalAmount.toFixed(2) : "0.00"}</td>
+                    <td>{subOrder.status || "N/A"}</td>
+                    <td>
+                      {new Date(subOrder.createdAt.seconds * 1000).toLocaleDateString() || "N/A"}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center">
+                  <td colSpan="6" className="text-center">
                     No sales data found for the selected period.
                   </td>
                 </tr>
@@ -147,7 +174,7 @@ const Reports = () => {
                 <th>Name</th>
                 <th>Stock Level</th>
                 <th>Price</th>
-                <th>Image</th> {/* New column for image */}
+                <th>Image</th>
               </tr>
             </thead>
             <tbody>
@@ -159,7 +186,6 @@ const Reports = () => {
                     <td>{item.stock || "0"}</td>
                     <td>${item.price ? item.price.toFixed(2) : "0.00"}</td>
                     <td>
-                      {/* Display image if imageUrl exists */}
                       {item.images ? (
                         <img
                           src={item.images}
