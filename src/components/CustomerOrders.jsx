@@ -110,6 +110,8 @@ const CustomerOrders = () => {
           );
         }
       }
+      // Reload the page after updating the status
+      window.location.reload();
     } catch (err) {
       console.error("Error updating subOrder status:", err.message);
       setError("Failed to update subOrder status.");
