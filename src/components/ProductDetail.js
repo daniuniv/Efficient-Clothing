@@ -219,6 +219,7 @@ const ProductDetail = () => {
     sizes = product.sizes.map((size) => size.trim());
   }
 
+  const isOutOfStock = product?.stock <= 0;
   return (
     <div className="container mt-5">
       <div className="row">
@@ -255,7 +256,12 @@ const ProductDetail = () => {
             min="1"
           />
 
-          <button className="btn btn-primary mt-3" onClick={handleAddToCart}>
+          <button
+            className="btn btn-primary mt-3"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}  // Disable only if the product is out of stock
+            style={{ backgroundColor: isOutOfStock ? '#d3d3d3' : '#007bff' }}  // Grey out button when disabled
+          >
             Add to Cart
           </button>
 
