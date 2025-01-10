@@ -23,15 +23,11 @@ const Catalog = () => {
       }));
 
       if (selectedCategory) {
-        // Merging Sweatpants and Jeans into Pants category
         if (selectedCategory === "Pants") {
           productList = productList.filter(product =>
             ['Pants', 'Sweatpants', 'Jeans'].includes(product.category)
           );
-        }
-        
-        // Merging Sweatshirt into Longsleeve Shirt category
-        else if (selectedCategory === "Longsleeve Shirt") {
+        } else if (selectedCategory === "Longsleeve Shirt") {
           productList = productList.filter(product =>
             ['Longsleeve Shirt', 'Sweatshirt'].includes(product.category)
           );
@@ -54,13 +50,19 @@ const Catalog = () => {
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center mb-4 custom-heading" onClick={() => window.location.href = 'http://localhost:3000/customer-dashboard'}>Product Catalog</h2>
+      <h2 className="text-center mb-4 custom-heading" onClick={() => window.location.href = 'http://localhost:3000/customer-dashboard'}>
+        Product Catalog
+      </h2>
 
       {/* Filters */}
       <div className="filters mb-4">
         <div className="row">
           <div className="col-md-3">
-            <select onChange={(e) => setSelectedCategory(e.target.value)} className="form-select mb-3">
+            <select
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="form-select mb-3"
+              aria-label="Filter by category"
+            >
               <option value="">All Categories</option>
               <option value="T-Shirt">T-Shirt</option>
               <option value="Longsleeve Shirt">Longsleeve Shirt</option>
@@ -69,7 +71,11 @@ const Catalog = () => {
             </select>
           </div>
           <div className="col-md-3">
-            <select onChange={(e) => setSelectedSize(e.target.value)} className="form-select mb-3">
+            <select
+              onChange={(e) => setSelectedSize(e.target.value)}
+              className="form-select mb-3"
+              aria-label="Filter by size"
+            >
               <option value="">All Sizes</option>
               <option value="S">Small</option>
               <option value="M">Medium</option>
@@ -85,102 +91,110 @@ const Catalog = () => {
                 className="min-price form-control"
                 value={minPrice}
                 onChange={(e) => setMinPrice(Number(e.target.value))}
+                aria-label="Minimum price"
               />
               <input
                 type="number"
                 className="max-price form-control"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
+                aria-label="Maximum price"
               />
             </div>
+          </div>
+          <div className="col-md-3 d-flex align-items-center">
+            <button
+              className="btn btn-secondary w-100"
+              onClick={() => {
+                setSelectedCategory('');
+                setSelectedSize('');
+                setMinPrice(0);
+                setMaxPrice(1000);
+              }}
+            >
+              Clear Filters
+            </button>
           </div>
         </div>
       </div>
 
       {/* Product Grid */}
-      <div className="row row-cols-1 row-cols-md-3 g-4">
-        {products.map((product) => {
-          // Split the images and take the first two
-          const images = product.images.split(',');
-          const firstImage = images[0];
-          const secondImage = images[1] || firstImage; // If no second image, show the first one
+      {products.length === 0 ? (
+        <div className="text-center mt-5">
+          <h4>No products found. Try adjusting your filters.</h4>
+        </div>
+      ) : (
+        <div className="row row-cols-1 row-cols-md-3 g-4">
+          {products.map((product) => {
+            const images = product.images.split(',');
+            const firstImage = images[0];
+            const secondImage = images[1] || firstImage;
 
-          return (
-            <div key={product.id} className="col d-flex justify-content-center">
-            <div className="text-left" style={{ width: '370px' }}>
-              <div 
-                onClick={() => navigate(`/product/${product.id}`)} 
-                style={{
-                  cursor: 'pointer',
-                  position: 'relative',
-                  width: '100%',
-                  height: '370px',
-                  backgroundColor: '#f8f9fa',
-                  display: 'flex',
-                  flexDirection: 'column', // Align vertically (default)
-                  alignItems: 'flex-start', // Align children to the left
-                }}
-                onMouseEnter={() => setHoveredProductId(product.id)}
-                onMouseLeave={() => setHoveredProductId(null)}
-              >
-                <img
-                  src={hoveredProductId === product.id ? secondImage : firstImage}
-                  alt={product.name}
-                  style={{
-                    width: '100%',
-                    height: '370px', // Adjust height to fit layout
-                    objectFit: 'cover',
-                    transition: '0.3s ease-in-out',
-                  }}
-                  referrerPolicy="no-referrer"
-                />
+            return (
+              <div key={product.id} className="col d-flex justify-content-center">
+                <div className="text-left" style={{ width: '370px' }}>
+                  <div
+                    onClick={() => navigate(`/product/${product.id}`)}
+                    style={{
+                      cursor: 'pointer',
+                      position: 'relative',
+                      width: '100%',
+                      height: '370px',
+                      backgroundColor: '#f8f9fa',
+                    }}
+                    onMouseEnter={() => setHoveredProductId(product.id)}
+                    onMouseLeave={() => setHoveredProductId(null)}
+                  >
+                    <img
+                      src={hoveredProductId === product.id ? secondImage : firstImage}
+                      alt={product.name}
+                      style={{
+                        width: '100%',
+                        height: '370px',
+                        objectFit: 'cover',
+                        objectPosition: 'top',
+                        transition: '0.3s ease-in-out',
+                      }}
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <div style={{ paddingLeft: '10px', marginTop: '10px' }}>
+                    <h5
+                      className="card-title"
+                      style={{
+                        fontFamily: 'sans-serif',
+                        fontSize: '16px',
+                        fontWeight: 'normal',
+                        textTransform: 'capitalize',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => navigate(`/product/${product.id}`)}
+                    >
+                      {product.name}
+                    </h5>
+                    <p
+                      className="card-text"
+                      style={{
+                        fontFamily: 'sans-serif',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        color: 'black',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => navigate(`/product/${product.id}`)}
+                    >
+                      ${product.price}
+                    </p>
+                  </div>
+                </div>
               </div>
-          
-              {/* Name and Price aligned to the left */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column', // Stack name and price vertically
-                width: '100%',
-                marginTop: '10px',
-                paddingLeft: '10px', // Add left padding for better alignment
-                textAlign: 'left', // Ensure left alignment
-              }}>
-                <h5 
-                  className="card-title" 
-                  style={{
-                    fontFamily: 'sans-serif', // Set sans-serif font
-                    fontSize: '16px',
-                    fontWeight: 'normal',
-                    textTransform: 'capitalize',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis', // Add "..." if title is too long
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer', // Make title clickable
-                  }}
-                  onClick={() => navigate(`/product/${product.id}`)} // Clicking on title also takes the user to product details
-                >
-                  {product.name}
-                </h5>
-                <p 
-                  className="card-text" 
-                  style={{
-                    fontFamily: 'sans-serif', // Set sans-serif font
-                    fontSize: '16px',
-                    fontWeight: 'bold', // Make price bold
-                    color: 'black', // Set price color to black
-                    cursor: 'pointer', // Make price clickable
-                  }}
-                  onClick={() => navigate(`/product/${product.id}`)} // Clicking on price takes the user to product details
-                >
-                  ${product.price}
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
