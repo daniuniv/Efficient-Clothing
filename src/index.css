@@ -126,5 +126,55 @@ body.dark-mode .price-range .form-range {
   color: white; /* White text for dark mode */
 }
 
+/* Target the label text in dark mode */
+body.dark-mode .MuiFormLabel-root {
+  color: #bcbcbc !important; /* Label text color */
+}
+
+/* Ensure the label text for focused inputs is also styled */
+body.dark-mode .MuiFormLabel-root.Mui-focused {
+  color: #eaeaea !important; /* Label color when focused */
+}
+
+/* Target the input text itself */
+body.dark-mode .MuiInputBase-input {
+  color: #ffffff !important; /* Input text color */
+  background-color: #2a2a2a !important; /* Input background */
+}
+
+/* Target the placeholder text */
+body.dark-mode .MuiInputBase-input::placeholder {
+  color: #bbbbbb !important; /* Placeholder text color */
+}
+
+/* Border color adjustments */
+body.dark-mode .MuiOutlinedInput-root fieldset {
+  border-color: #333333 !important; /* Default border color */
+}
+
+body.dark-mode .MuiOutlinedInput-root:hover fieldset {
+  border-color: #555555 !important; /* Hover border color */
+}
+
+body.dark-mode .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #eaeaea !important; /* Focus border color */
+}
+/* Extremely specific targeting of the disabled input */
+body.dark-mode .MuiInputBase-input.Mui-disabled.css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input {
+  color: #ffffff !important; /* Muted text color for disabled inputs */
+}
+
+/* Target all disabled inputs as a fallback */
+body.dark-mode input.Mui-disabled {
+  color: #eaeaea !important ; 
+  -webkit-text-fill-color:#848484  !important;/* Fallback muted text color */
+}
+
+/* Fallback for dark mode on all text inputs */
+body.dark-mode input:disabled {
+  color: #eaeaea !important; /* Ensure text color for standard disabled inputs */
+}
+
+
 
 
