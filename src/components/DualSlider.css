@@ -22,7 +22,7 @@
   transform: translateY(-50%);
   width: 20px;
   height: 20px;
-  background-color: #007bff;
+  background-color: #e683b4;
   border-radius: 50%;
   cursor: pointer;
   z-index: 3;
@@ -41,7 +41,7 @@
   top: 50%;
   transform: translateY(-50%);
   height: 8px;
-  background-color: #007bff;
+  background-color: #e683b4;
   border-radius: 5px;
   cursor: pointer;
   z-index: 2;

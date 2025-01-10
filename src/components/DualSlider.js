@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
 
-const minDistance = 100;  // Minimum distance between the points
+const minDistance = 100; // Minimum distance between the points
 
 export default function DualSlider({ minPrice, setMinPrice, maxPrice, setMaxPrice }) {
-  const [value, setValue] = useState([minPrice, maxPrice]);  // Initialize with props values
+  const [value, setValue] = useState([minPrice, maxPrice]); // Initialize with props values
 
   const handleChange = (event, newValue, activeThumb) => {
     if (!Array.isArray(newValue)) {
@@ -31,11 +31,22 @@ export default function DualSlider({ minPrice, setMinPrice, maxPrice, setMaxPric
         value={value}
         onChange={handleChange}
         valueLabelDisplay="auto"
-        valueLabelFormat={(value) => `${value}$`}  // Format the value with a dollar sign
+        valueLabelFormat={(value) => `${value}$`} // Format the value with a dollar sign
         disableSwap
         min={0}
         max={1000}
         valueLabelDisplay="auto"
+        sx={{
+          '& .MuiSlider-thumb': {
+            backgroundColor: '#e683b4', // Change thumb color
+          },
+          '& .MuiSlider-track': {
+            backgroundColor: '#e683b4', // Change track color
+          },
+          '& .MuiSlider-rail': {
+            backgroundColor: '#d3d3d3', // Change rail color
+          },
+        }}
       />
     </Box>
   );

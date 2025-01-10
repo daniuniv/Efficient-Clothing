@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Menu, MenuItem, Box } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Menu, MenuItem, Box, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from './firebaseConfig'; // Ensure this import path is correct
+import logo from './logo/EFlogo.jpg'; // Correct path to your logo
 
 const CustomerNavigation = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -54,12 +55,32 @@ const CustomerNavigation = () => {
   }
 
   return (
-    <AppBar position="sticky" sx={{ backgroundColor: '#212121' }}> {/* Slightly lighter black */}
+    <AppBar position="sticky" sx={{ backgroundColor: '#07080A' }}> {/* Set background color */}
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography variant="h6" sx={{ color: 'white' }}>
-          Efficient Clothing
-        </Typography>
-        
+        {/* Logo as a clickable button that redirects to the catalog page */}
+        <Button 
+  onClick={() => navigate('/catalog')} 
+  sx={{
+    padding: 0, 
+    width: '40px', 
+    height: '40px', 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    minWidth: '40px',  // Ensures the button doesn't grow larger than desired
+    '&:hover': {
+      backgroundColor: 'transparent', // Removes hover background effect if not desired
+    }
+  }}
+>
+  <img 
+    src={logo} 
+    alt="Efficient Clothing" 
+    style={{ width: '40px', height: '40px', objectFit: 'contain' }} 
+  />
+</Button>
+
+
         {/* Burger Icon on the right */}
         <Box sx={{ position: 'relative', ml: 'auto' }}>
           <IconButton
@@ -79,7 +100,7 @@ const CustomerNavigation = () => {
           onClose={handleClose}
           PaperProps={{
             sx: {
-              backgroundColor: '#212121', // Matching the AppBar background color
+              backgroundColor: '#07080A', // Matching the AppBar background color
               color: 'white',
               borderRadius: 2,
             },

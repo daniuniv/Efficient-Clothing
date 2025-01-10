@@ -11,46 +11,46 @@ const Catalog = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(1000);
+  const [hoveredProductId, setHoveredProductId] = useState(null); // Track hover state
   const navigate = useNavigate();
 
   useEffect(() => {
-  const fetchProducts = async () => {
-    let querySnapshot = await getDocs(collection(db, 'inventory'));
-    let productList = querySnapshot.docs.map(doc => ({
-      ...doc.data(),
-      id: doc.id, // Get the Firestore document ID
-    }));
+    const fetchProducts = async () => {
+      let querySnapshot = await getDocs(collection(db, 'inventory'));
+      let productList = querySnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id, // Get the Firestore document ID
+      }));
 
-    if (selectedCategory) {
-      // Merging Sweatpants and Jeans into Pants category
-      if (selectedCategory === "Pants") {
-        productList = productList.filter(product =>
-          ['Pants', 'Sweatpants', 'Jeans'].includes(product.category)
-        );
+      if (selectedCategory) {
+        // Merging Sweatpants and Jeans into Pants category
+        if (selectedCategory === "Pants") {
+          productList = productList.filter(product =>
+            ['Pants', 'Sweatpants', 'Jeans'].includes(product.category)
+          );
+        }
+        
+        // Merging Sweatshirt into Longsleeve Shirt category
+        else if (selectedCategory === "Longsleeve Shirt") {
+          productList = productList.filter(product =>
+            ['Longsleeve Shirt', 'Sweatshirt'].includes(product.category)
+          );
+        } else {
+          productList = productList.filter(product => product.category === selectedCategory);
+        }
       }
-      
-      // Merging Sweatshirt into Longsleeve Shirt category
-      else if (selectedCategory === "Longsleeve Shirt") {
-        productList = productList.filter(product =>
-          ['Longsleeve Shirt', 'Sweatshirt'].includes(product.category)
-        );
-      } else {
-        productList = productList.filter(product => product.category === selectedCategory);
+
+      if (selectedSize) {
+        productList = productList.filter(product => product.sizes.split(',').includes(selectedSize));
       }
-    }
 
-    if (selectedSize) {
-      productList = productList.filter(product => product.sizes.split(',').includes(selectedSize));
-    }
+      productList = productList.filter(product => product.price >= minPrice && product.price <= maxPrice);
 
-    productList = productList.filter(product => product.price >= minPrice && product.price <= maxPrice);
+      setProducts(productList);
+    };
 
-    setProducts(productList);
-  };
-
-  fetchProducts();
-}, [selectedCategory, selectedSize, minPrice, maxPrice]);
-
+    fetchProducts();
+  }, [selectedCategory, selectedSize, minPrice, maxPrice]);
 
   return (
     <div className="container mt-5">
@@ -78,27 +78,7 @@ const Catalog = () => {
             </select>
           </div>
           <div className="col-md-3">
-            <DualSlider minPrice={minPrice} setMinPrice={setMinPrice} maxPrice={maxPrice} setMaxPrice={setMaxPrice}/>
-            {/* <div className="price-range">
-              <input
-                type="range"
-                className="min-input form-range"
-                min="0"
-                max="1000"
-                step="1"
-                value={minPrice}
-                onChange={(e) => setMinPrice(Number(e.target.value))}
-              />
-              <input
-                type="range"
-                className="max-input form-range"
-                min="0"
-                max="1000"
-                step="1"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-              />
-            </div> */}
+            <DualSlider minPrice={minPrice} setMinPrice={setMinPrice} maxPrice={maxPrice} setMaxPrice={setMaxPrice} />
             <div className="d-flex justify-content-between">
               <input
                 type="number"
@@ -119,29 +99,87 @@ const Catalog = () => {
 
       {/* Product Grid */}
       <div className="row row-cols-1 row-cols-md-3 g-4">
-        {products.map((product, index) => (
-          <div key={index} className="col">
-            <div className="card shadow-lg rounded">
-              <img
-                src={product.images}
-                className="card-img-top rounded"
-                alt={product.name}
-                style={{ height: '320px', objectFit: 'cover', backgroundColor: '#f8f9fa' }}
-                referrerPolicy="no-referrer"
-              />
-              <div className="card-body">
-                <h5 className="card-title">{product.name}</h5>
-                <p className="card-text">${product.price}</p>
-                <button
-                  className="btn btn-primary w-100"
-                  onClick={() => navigate(`/product/${product.id}`)}
+        {products.map((product) => {
+          // Split the images and take the first two
+          const images = product.images.split(',');
+          const firstImage = images[0];
+          const secondImage = images[1] || firstImage; // If no second image, show the first one
+
+          return (
+            <div key={product.id} className="col d-flex justify-content-center">
+            <div className="text-left" style={{ width: '370px' }}>
+              <div 
+                onClick={() => navigate(`/product/${product.id}`)} 
+                style={{
+                  cursor: 'pointer',
+                  position: 'relative',
+                  width: '100%',
+                  height: '370px',
+                  backgroundColor: '#f8f9fa',
+                  display: 'flex',
+                  flexDirection: 'column', // Align vertically (default)
+                  alignItems: 'flex-start', // Align children to the left
+                }}
+                onMouseEnter={() => setHoveredProductId(product.id)}
+                onMouseLeave={() => setHoveredProductId(null)}
+              >
+                <img
+                  src={hoveredProductId === product.id ? secondImage : firstImage}
+                  alt={product.name}
+                  style={{
+                    width: '100%',
+                    height: '370px', // Adjust height to fit layout
+                    objectFit: 'cover',
+                    transition: '0.3s ease-in-out',
+                  }}
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+          
+              {/* Name and Price aligned to the left */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column', // Stack name and price vertically
+                width: '100%',
+                marginTop: '10px',
+                paddingLeft: '10px', // Add left padding for better alignment
+                textAlign: 'left', // Ensure left alignment
+              }}>
+                <h5 
+                  className="card-title" 
+                  style={{
+                    fontFamily: 'sans-serif', // Set sans-serif font
+                    fontSize: '16px',
+                    fontWeight: 'normal',
+                    textTransform: 'capitalize',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis', // Add "..." if title is too long
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer', // Make title clickable
+                  }}
+                  onClick={() => navigate(`/product/${product.id}`)} // Clicking on title also takes the user to product details
                 >
-                  View Details
-                </button>
+                  {product.name}
+                </h5>
+                <p 
+                  className="card-text" 
+                  style={{
+                    fontFamily: 'sans-serif', // Set sans-serif font
+                    fontSize: '16px',
+                    fontWeight: 'bold', // Make price bold
+                    color: 'black', // Set price color to black
+                    cursor: 'pointer', // Make price clickable
+                  }}
+                  onClick={() => navigate(`/product/${product.id}`)} // Clicking on price takes the user to product details
+                >
+                  ${product.price}
+                </p>
               </div>
             </div>
           </div>
-        ))}
+          
+          );
+        })}
       </div>
     </div>
   );
