@@ -340,6 +340,7 @@ const ProductDetail = () => {
       border: 'none',
       marginRight: '10px',
     }}
+    className="quantity-btn"
     disabled={product?.stock === 0} // Disable button if out of stock
   >
     -
@@ -365,6 +366,7 @@ const ProductDetail = () => {
       border: 'none',
       marginLeft: '10px',
     }}
+    className="quantity-btn"
     disabled={product?.stock === 0} // Disable button if out of stock
   >
     +

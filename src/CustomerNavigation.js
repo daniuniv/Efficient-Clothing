@@ -113,16 +113,19 @@ const CustomerNavigation = () => {
           </MenuItem>
           <MenuItem onClick={handleClose}>
             <Link to="/cart" style={{ textDecoration: 'none', color: 'white' }}>
-              View Cart
+              View Cart 
+              <span style={{ color: '#121212' }}>----------</span>
             </Link>
           </MenuItem>
           <MenuItem onClick={handleClose}>
             <Link to="/your-orders" style={{ textDecoration: 'none', color: 'white' }}>
               View Orders
+              <span style={{ color: '#121212' }}>------</span>
             </Link>
           </MenuItem>
           <MenuItem onClick={handleLogout} style={{ color: 'white' }}>
             Logout
+            <span style={{ color: '#121212' }}>------</span>
           </MenuItem>
         </Menu>
       </Toolbar>

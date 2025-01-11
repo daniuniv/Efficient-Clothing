@@ -23,7 +23,7 @@ const StoreManagerNavigation = () => {
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          setUser({ ...authUser, role: userData.role }); // Store user role along with auth data
+          setUser({ ...authUser, role: userData.role,approved: userData.approved }); // Store user role along with auth data
         } else {
           setUser(null); // If no user data found, set user as null
         }
@@ -50,7 +50,7 @@ const StoreManagerNavigation = () => {
     navigate("/login"); // Redirect to login page after logout
   };
 
-  if (!user || user.role !== 'storeManager' || !user.approved) { // Only show if user is logged in and has role 'storeManager'
+  if (!user || user.role !== 'storeManager' || user.approved !== true) { // Only show if user is logged in and has role 'storeManager'
     return null; // Don't render anything if user is not a storeManager
   }
 
@@ -108,16 +108,19 @@ const StoreManagerNavigation = () => {
           <MenuItem onClick={handleClose}>
             <Link to="/inventory-management" style={{ textDecoration: 'none', color: 'white' }}>
               Manage inventory
+              <span style={{ color: '#121212' }}>------</span>
             </Link>
           </MenuItem>
           <MenuItem onClick={handleClose}>
             <Link to="/customer-orders" style={{ textDecoration: 'none', color: 'white' }}>
               View Customer Orders
+              <span style={{ color: '#121212' }}>------</span>
             </Link>
           </MenuItem>
           <MenuItem onClick={handleClose}>
             <Link to="/reports" style={{ textDecoration: 'none', color: 'white' }}>
               View Reports
+              <span style={{ color: '#121212' }}>-----------</span>
             </Link>
           </MenuItem>
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
