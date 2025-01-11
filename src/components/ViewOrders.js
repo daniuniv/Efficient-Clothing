@@ -87,9 +87,9 @@ const ViewOrders = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="">All</option>
-              <option value="Pending">Pending</option>
-              <option value="Processed">Processed</option>
+              <option value="Processing">Processing</option>
               <option value="Shipped">Shipped</option>
+              <option value="Delivered">Delivered</option>
             </select>
           </div>
 
