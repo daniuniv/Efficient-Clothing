@@ -3,7 +3,7 @@ import { db } from '../firebaseConfig';
 import { getAuth } from 'firebase/auth';
 import { collection, query, where, getDocs, writeBatch, doc, getFirestore, FieldValue, increment} from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import { TextField, Button, Box, Typography, Paper } from '@mui/material';
+import { TextField, Button, Box, Typography, Paper, LinearProgress } from '@mui/material';
 
 
 const Checkout = () => {
@@ -150,11 +150,13 @@ const Checkout = () => {
       setError(`There was an error placing your order: ${err.message || err}`);
     }
   };
-
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box sx={{ width: '100%', position: 'fixed', top: '64px', left: 0, zIndex: 999 }}>
+        <LinearProgress sx={{ height: 5, borderRadius: 2, backgroundColor: '#5be9c5' }} color="43d5b0" />
+      </Box>
+    );
   }
-
   return (
     <div className="container mt-5">
       <Typography variant="h4" gutterBottom>Checkout</Typography>
@@ -201,15 +203,22 @@ const Checkout = () => {
         <Typography variant="h6" gutterBottom>Total Amount: ${totalAmount}</Typography>
       </Box>
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handlePlaceOrder}
-        fullWidth
-        style={{ marginTop: '20px' }}
-      >
-        Confirm Order
-      </Button>
+       <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={handlePlaceOrder}
+                sx={{
+                  mt: 2,
+                  backgroundColor: '#43d5b0', // Custom color
+                  '&:hover': {
+                    backgroundColor: '#58dab9', // Hover color
+                  },
+                }}
+              //  disabled={cartItems.length === 0} // Disable the button when the cart is empty
+              >
+                Confirm Order
+              </Button>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../firebaseConfig';
 import { getAuth } from 'firebase/auth';
 import { collection, query, where, getDocs, getDoc, doc, deleteDoc } from 'firebase/firestore';
-import { Card, CardContent, Typography, IconButton, Button, Grid, Box, Paper, Divider, CircularProgress } from '@mui/material';
+import { Card, CardContent, Typography, IconButton, Button, Grid, Box, Paper, Divider, LinearProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 
@@ -74,8 +74,8 @@ const CartView = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <CircularProgress sx={{ color: '#5be9c5' }} />
+      <Box sx={{ width: '100%', position: 'fixed', top: '64px', left: 0, zIndex: 999 }}>
+        <LinearProgress sx={{ height: 5, borderRadius: 2, backgroundColor: '#5be9c5' }} color="43d5b0" />
       </Box>
     );
   }
@@ -136,21 +136,22 @@ const CartView = () => {
       )}
 
       <Box mt={4}>
-      <Button
-  variant="contained"
-  color="primary"
-  fullWidth
-  onClick={handleProceedToCheckout}
-  sx={{
-    mt: 2,
-    backgroundColor: '#43d5b0', // Custom color
-    '&:hover': {
-      backgroundColor: '#58dab9', // Hover color
-    },
-  }}
->
-  Proceed to Checkout
-</Button>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={handleProceedToCheckout}
+          sx={{
+            mt: 2,
+            backgroundColor: '#43d5b0', // Custom color
+            '&:hover': {
+              backgroundColor: '#58dab9', // Hover color
+            },
+          }}
+          disabled={cartItems.length === 0} // Disable the button when the cart is empty
+        >
+          Proceed to Checkout
+        </Button>
       </Box>
     </Box>
   );
