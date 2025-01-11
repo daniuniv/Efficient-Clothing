@@ -6,7 +6,7 @@ import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from './firebaseConfig'; // Ensure this import path is correct
 
-const CustomerNavigation = () => {
+const StoreManagerNavigation = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [user, setUser] = React.useState(null); // Manage user state
   const open = Boolean(anchorEl);
@@ -37,11 +37,11 @@ const CustomerNavigation = () => {
 
   // Handle menu toggle
   const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+    setAnchorEl(event.currentTarget); // Set the anchor element when the menu icon is clicked
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setAnchorEl(null); // Close the menu when clicking outside
   };
 
   const handleLogout = async () => {
@@ -107,4 +107,4 @@ const CustomerNavigation = () => {
   );
 };
 
-export default CustomerNavigation;
+export default StoreManagerNavigation;
