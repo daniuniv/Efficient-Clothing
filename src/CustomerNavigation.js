@@ -94,39 +94,37 @@ const CustomerNavigation = () => {
         </Box>
 
         {/* Menu - only renders if anchorEl is set (menu is open) */}
-        {anchorEl && (
-          <Menu
-            anchorEl={anchorEl}
-            open={open} // Open the menu only when anchorEl is not null
-            onClose={handleClose} // Only close the menu when user clicks outside or on a menu item
-            PaperProps={{
-              sx: {
-                backgroundColor: '#07080A', // Matching the AppBar background color
-                color: 'white',
-                borderRadius: 2,
-              },
-            }}
-          >
-            <MenuItem onClick={handleClose}>
-              <Link to="/catalog" style={{ textDecoration: 'none', color: 'white' }}>
-                Browse Catalog
-              </Link>
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <Link to="/cart" style={{ textDecoration: 'none', color: 'white' }}>
-                View Cart
-              </Link>
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <Link to="/your-orders" style={{ textDecoration: 'none', color: 'white' }}>
-                View Orders
-              </Link>
-            </MenuItem>
-            <MenuItem onClick={handleLogout} style={{ color: 'white' }}>
-              Logout
-            </MenuItem>
-          </Menu>
-        )}
+        <Menu
+          anchorEl={anchorEl}
+          open={open} // Open the menu only when anchorEl is not null
+          onClose={handleClose} // Only close the menu when user clicks outside or on a menu item
+          PaperProps={{
+            sx: {
+              backgroundColor: '#07080A', // Matching the AppBar background color
+              color: 'white',
+              borderRadius: 2,
+            },
+          }}
+        >
+          <MenuItem onClick={handleClose}>
+            <Link to="/catalog" style={{ textDecoration: 'none', color: 'white' }}>
+              Browse Catalog
+            </Link>
+          </MenuItem>
+          <MenuItem onClick={handleClose}>
+            <Link to="/cart" style={{ textDecoration: 'none', color: 'white' }}>
+              View Cart
+            </Link>
+          </MenuItem>
+          <MenuItem onClick={handleClose}>
+            <Link to="/your-orders" style={{ textDecoration: 'none', color: 'white' }}>
+              View Orders
+            </Link>
+          </MenuItem>
+          <MenuItem onClick={handleLogout} style={{ color: 'white' }}>
+            Logout
+          </MenuItem>
+        </Menu>
       </Toolbar>
     </AppBar>
   );
