@@ -50,7 +50,7 @@ const StoreManagerNavigation = () => {
     navigate("/login"); // Redirect to login page after logout
   };
 
-  if (!user || user.role !== 'storeManager') { // Only show if user is logged in and has role 'storeManager'
+  if (!user || user.role !== 'storeManager' || !user.approved) { // Only show if user is logged in and has role 'storeManager'
     return null; // Don't render anything if user is not a storeManager
   }
 

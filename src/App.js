@@ -15,6 +15,7 @@ import StoreManagerNavigation from './StoreManagerNavigation'; // Updated import
 import CartView from './components/CartView'; // Add this import
 import Checkout from './components/Checkout'; // Add this import for Checkout page
 import ViewOrders from "./components/ViewOrders";
+import OwnerDashboard from "./components/OwnerDashboard";
 
 function App() {
   return (
@@ -48,7 +49,10 @@ function App() {
           {/* Customer view orders status */}
           <Route path="/your-orders" element={<ViewOrders/>} /> 
 
-        </Routes>
+          {/* Owner */}
+          <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+          </Routes>
+
       </Layout>
     </Router>
   );

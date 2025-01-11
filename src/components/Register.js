@@ -28,12 +28,16 @@ const Register = () => {
       await setDoc(userRef, {
         email: email,
         role: role,
-        ...(role === 'storeManager' ? { storeName, storeAddress, contactInfo } : { fullName, contactInfo }),
+        ...(role === 'storeManager' ? { storeName, storeAddress, contactInfo, approved: false,} : { fullName, contactInfo }),
       });
 
       // Show success message
       console.log('User data added to Firestore');
-      alert(`User registered successfully as ${role}`);
+      if (role === 'storeManager') {
+        alert(`Store Manager registered successfully. Your account is pending approval.`);
+      } else {
+        alert(`Customer registered successfully.`);
+      }
 
       // Redirect to the login page after registration
       console.log('Navigating to login');

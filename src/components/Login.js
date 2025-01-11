@@ -20,7 +20,7 @@ const Login = () => {
         const userDoc = getDoc(doc(db, 'users', user.uid));
         userDoc.then((docSnapshot) => {
           const userData = docSnapshot.data();
-          if (userData.role === 'storeManager') {
+          if (userData.role === 'storeManager' && userData.approved != false) {
             navigate('/store-manager-dashboard');
           } else if (userData.role === 'customer') {
             navigate('/customer-dashboard');
@@ -41,74 +41,103 @@ const Login = () => {
     provider.setCustomParameters({
       prompt: 'select_account', // Forces account selection every time
     });
-
+  
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
+  
       // Fetch user data from Firestore
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        alert(`Logged in as ${userData.role}`);
+  
+        // Check for store manager approval
+        if (userData.role === 'storeManager' && (userData.approved === false || userData.approved === 'false')) {
+          setError('Your account has not been approved yet. Please contact the owner.');
+          console.log('Condition matched, logging out the user.');
 
-        // Store the store name in localStorage
-        const storeName = userData.storeName; // Assuming the user's store name is in userData.storeName
+          // Sign out the user to prevent access
+          await signOut(auth);
+
+          return; // Stop further execution
+        }
+  
+        // Log in user and redirect
+        alert(`Logged in as ${userData.role}`);
+  
+        const storeName = userData.storeName;
         if (storeName) {
           localStorage.setItem('storeName', storeName);
         }
-
-        // Redirect based on role
+  
         if (userData.role === 'storeManager') {
           navigate('/store-manager-dashboard');
         } else if (userData.role === 'customer') {
           navigate('/customer-dashboard');
+        } else if (userData.role === 'owner') {
+          navigate('/owner-dashboard');
         } else {
           alert('Unknown role. Please contact support.');
         }
       } else {
-        alert('User data not found in database.');
+        setError('User data not found in database.');
       }
     } catch (error) {
       setError(error.message);
       console.error(error.message);
     }
   };
+  
 
   // Handle Email/Password Login
   const handleEmailLogin = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
+  
       // Fetch user data from Firestore
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        alert(`Logged in as ${userData.role}`);
+  
+        // Check for store manager approval
+        if (userData.role === 'storeManager' && (userData.approved === false || userData.approved === 'false')) {
+          setError('Your account has not been approved yet. Please contact the owner.');
+          console.log('Condition matched, logging out the user.');
 
-        // Store the store name in localStorage
-        const storeName = userData.storeName; // Assuming the user's store name is in userData.storeName
+          // Sign out the user to prevent access
+          await signOut(auth);
+
+          return; // Stop further execution
+        }
+  
+        // Log in user and redirect
+        alert(`Logged in as ${userData.role}`);
+  
+        const storeName = userData.storeName;
         if (storeName) {
           localStorage.setItem('storeName', storeName);
         }
-
-        // Redirect based on role
+  
         if (userData.role === 'storeManager') {
           navigate('/store-manager-dashboard');
         } else if (userData.role === 'customer') {
           navigate('/customer-dashboard');
+        } else if (userData.role === 'owner') {
+          navigate('/owner-dashboard');
         } else {
           alert('Unknown role. Please contact support.');
         }
       } else {
-        alert('User data not found in database.');
+        setError('User data not found in database.');
       }
     } catch (error) {
       setError(error.message);
       console.error(error.message);
     }
   };
+  
+
 
   return (
     <div className="container mt-5">
