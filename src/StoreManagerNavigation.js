@@ -57,9 +57,9 @@ const StoreManagerNavigation = () => {
   return (
     <AppBar position="sticky" sx={{ backgroundColor: '#07080A' }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        {/* Logo as a clickable button that redirects to the inventory-management page */}
+        {/* Logo as a clickable button that redirects to the catalog page */}
         <Button 
-          onClick={() => navigate('/inventory-management')} 
+          onClick={() => navigate('/catalog')} 
           sx={{
             padding: 0, 
             width: '40px', 
