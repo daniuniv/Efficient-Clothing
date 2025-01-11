@@ -175,6 +175,24 @@ body.dark-mode input:disabled {
   color: #eaeaea !important; /* Ensure text color for standard disabled inputs */
 }
 
+body.dark-mode .card-text {
+  color: #c4c3c3 !important;
+}
+
+body.dark-mode .text-muted {
+  color: #c4c3c3 !important;
+}
 
 
+body.dark-mode .carousel-indicators {
+  color: #c4c3c3 !important;
+  background-color: #eaeaea00!important;
+}
 
+body.dark-mode h3 {
+  color: #c4c3c3!important;
+}
+
+body.dark-mode .MuiTypography-root.MuiTypography-body2.css-1a1whku-MuiTypography-root{
+  color: #c4c3c3!important;
+}
