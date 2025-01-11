@@ -29,21 +29,21 @@ const InventoryManagement = () => {
   const fetchItems = async () => {
     try {
       const inventoryItems = await getItemsByStoreName(storeName);
-  
+
       // Apply filters here
       const filteredItems = inventoryItems.filter(item => {
         const categoryMatch = !filters.category || item.category === filters.category;
-        const sizeMatch = !filters.size || item.sizes.split(',').includes(filters.size);
+        const sizeMatch = !filters.size || (item.sizes && item.sizes.split(',').includes(filters.size));
         const priceMatch =
           (!filters.priceRange || filters.priceRange.length === 0) ||
           (item.price >= filters.priceRange[0] && item.price <= filters.priceRange[1]);
-  
+
         return categoryMatch && sizeMatch && priceMatch;
       });
-  
+
       console.log("Filtered:");
       console.log(filteredItems);
-  
+
       setItems(filteredItems); // Set filtered items
       console.log("Final:");
       console.log(filteredItems);
@@ -51,7 +51,6 @@ const InventoryManagement = () => {
       setError("Failed to fetch inventory items.");
     }
   };
-  
 
   const handleAddItem = async () => {
     try {
@@ -94,7 +93,7 @@ const InventoryManagement = () => {
       setError("Failed to delete item.");
     }
   };
-  
+
   return (
     <div className="container mt-5">
       <h2>Inventory Management</h2>
@@ -221,7 +220,9 @@ const InventoryManagement = () => {
               <td>{item.category}</td>
               <td>${item.price}</td>
               <td>{item.stock}</td>
-              <td>{item.sizes.join(', ')}</td>
+              <td>
+                {typeof item.sizes === "string" ? item.sizes.split(',').join(', ') : item.sizes?.join(', ')}
+              </td>
               <td>
                 <button className="btn btn-sm btn-warning" onClick={() => setEditingItem(item)}>
                   Edit

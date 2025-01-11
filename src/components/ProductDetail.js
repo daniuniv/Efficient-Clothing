@@ -97,12 +97,26 @@ const ProductDetail = () => {
       alert('You must be logged in to add items to the cart.');
       return;
     }
-
+  
     if (!size) {
       alert('Please select a size');
       return;
     }
-
+  
+    if (!product) {
+      alert('Product data is missing.');
+      return;
+    }
+  
+    console.log('Product object:', product);
+  
+    if (!product.id || !product.name || !product.images || !product.price || !product.storeName) {
+      alert('Product data is incomplete.');
+      return;
+    }
+  
+    console.log('Adding to cart:', { productId: product.id, size, quantity });
+  
     const userId = auth.currentUser.uid;
     const newCartItem = {
       name: product.name,
@@ -115,28 +129,34 @@ const ProductDetail = () => {
       createdAt: new Date(),
       storeName: product.storeName,
     };
-
+  
     try {
       const cartRef = collection(db, 'cart');
-      const q = query(cartRef, where('userId', '==', userId), where('productId', '==', product.id), where('size', '==', size));
+      const q = query(
+        cartRef,
+        where('userId', '==', userId),
+        where('productId', '==', product.id),
+        where('size', '==', size)
+      );
+  
       const querySnapshot = await getDocs(q);
-
+  
       if (!querySnapshot.empty) {
         alert('This item is already in your cart.');
         return;
       }
-
+  
       await setDoc(doc(collection(db, 'cart'), `${userId}-${product.id}-${size}`), newCartItem);
       setConfirmation('Product added to cart!');
       setSize('');
       setQuantity(1);
       setTimeout(() => setConfirmation(null), 3000);
     } catch (error) {
-      console.error('Error adding product to cart: ', error);
-      alert('There was an error adding the product to your cart.');
+      console.error('Error adding product to cart:', error);
+      alert('There was an error adding the product to your cart. Please check the console for more details.');
     }
   };
-
+  
   const handleRatingSubmit = async () => {
     if (!auth.currentUser) {
       alert('You must be logged in to submit a review.');
