@@ -1,159 +1,134 @@
-import React, { useState, useEffect } from 'react';
-import { db } from '../firebaseConfig';
-import { getAuth } from 'firebase/auth';
-import { collection, query, where, getDocs, getDoc, doc, deleteDoc } from 'firebase/firestore';
-import { Card, CardContent, Typography, IconButton, Button, Grid, Box, Paper, Divider, LinearProgress } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { db } from "../firebaseConfig";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { useNavigate } from "react-router-dom"; // Importing useNavigate for redirection
+import { Button, Card, CardContent, Typography, Grid, IconButton, LinearProgress } from "@mui/material"; // MUI components
+import DeleteIcon from "@mui/icons-material/Delete"; // MUI delete icon
 
 const CartView = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const auth = getAuth();
-  const navigate = useNavigate();
+  const userId = auth.currentUser?.uid;
+  const navigate = useNavigate(); // Using navigate hook for redirection
 
+  // Fetch cart items
   useEffect(() => {
     const fetchCartItems = async () => {
-      if (!auth.currentUser) {
-        setError('You must be logged in to view your cart');
-        setLoading(false);
-        return;
-      }
-
-      const userId = auth.currentUser.uid;
-      const cartRef = collection(db, 'cart');
-      const q = query(cartRef, where('userId', '==', userId));
-
       try {
-        const querySnapshot = await getDocs(q);
-        const items = await Promise.all(querySnapshot.docs.map(async (docSnapshot) => {
-          const cartItem = docSnapshot.data();
-          const inventoryRef = doc(db, 'inventory', cartItem.productId);
-          const inventoryDoc = await getDoc(inventoryRef);
-
-          if (!inventoryDoc.exists()) {
-            throw new Error('Inventory item not found');
-          }
-          const inventoryData = inventoryDoc.data();
-
-          return {
-            id: docSnapshot.id,
-            ...cartItem,
-            images: inventoryData?.images || 'https://via.placeholder.com/100',
-          };
-        }));
-
-        if (items.length === 0) {
-          setError('Your cart is empty.');
-        } else {
-          setCartItems(items);
-        }
-        setLoading(false);
+        setLoading(true);
+        const cartSnapshot = await getDocs(collection(db, "cart"));
+        const cartList = cartSnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((item) => item.userId === userId); // Filter by userId
+        
+        setCartItems(cartList);
       } catch (err) {
-        setError('Error fetching cart items: ' + err.message);
+        setError("Failed to load cart items.");
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchCartItems();
-  }, [auth.currentUser]);
+    if (userId) {
+      fetchCartItems();
+    }
+  }, [userId]);
 
-  const handleRemoveItem = async (itemId) => {
+  // Remove item from cart
+  const removeItemFromCart = async (itemId) => {
     try {
-      await deleteDoc(doc(db, 'cart', itemId));
-      setCartItems(cartItems.filter(item => item.id !== itemId));
+      await deleteDoc(doc(db, "cart", itemId)); // Delete from cart collection
+      setCartItems(cartItems.filter((item) => item.id !== itemId)); // Update local state
     } catch (err) {
-      console.error('Error removing item from cart: ', err);
+      setError("Failed to remove item from cart.");
     }
   };
 
-  const handleProceedToCheckout = () => {
-    navigate('/checkout');
+  // Redirect to checkout page
+  const handleCheckout = () => {
+    navigate("/checkout"); // Navigate to checkout page
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ width: '100%', position: 'fixed', top: '64px', left: 0, zIndex: 999 }}>
-        <LinearProgress sx={{ height: 5, borderRadius: 2, backgroundColor: '#5be9c5' }} color="43d5b0" />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <Typography variant="h6" color="error">{error}</Typography>
-      </Box>
-    );
-  }
-
   return (
-    <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: 2 }}>
-      <Typography variant="h4" gutterBottom textAlign="center">Your Cart</Typography>
-
-      {cartItems.length === 0 ? (
-        <Typography variant="h6" color="textSecondary" textAlign="center">Your cart is empty.</Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {cartItems.map(item => (
-            <Grid item xs={12} sm={6} md={4} key={item.id}>
-              <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <Box display="flex" alignItems="center" p={2}>
-                  <img
-                    src={item.images || 'https://via.placeholder.com/100'}
-                    alt={item.name}
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                      objectFit: 'cover',
-                      marginRight: '16px',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <CardContent sx={{ flex: 1 }}>
-                    <Typography variant="h6">{item.name}</Typography>
-                    <Typography variant="body2" color="textSecondary">Size: {item.size}</Typography>
-                    <Typography variant="body2" color="textSecondary">Price: ${item.price}</Typography>
-                    <Typography variant="body2" color="textSecondary">Quantity: {item.quantity}</Typography>
-
-                    <Box mt={2}>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleRemoveItem(item.id)}
-                        sx={{ marginRight: '10px' }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </CardContent>
-                </Box>
-                <Divider />
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
-
-      <Box mt={4}>
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleProceedToCheckout}
+    <div className="container mt-5">
+      {loading && (
+        <LinearProgress
           sx={{
-            mt: 2,
-            backgroundColor: '#43d5b0', // Custom color
-            '&:hover': {
-              backgroundColor: '#58dab9', // Hover color
+            height: 4,
+            backgroundColor: "#f0f0f0",
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: '#47b49c',
             },
           }}
-          disabled={cartItems.length === 0} // Disable the button when the cart is empty
-        >
-          Proceed to Checkout
-        </Button>
-      </Box>
-    </Box>
+        />
+      )}
+      
+      <Typography variant="h4" gutterBottom>Your Cart</Typography>
+      {error && <p className="text-danger">{error}</p>}
+
+      {cartItems.length === 0 ? (
+        <p>No items in your cart.</p>
+      ) : (
+        <>
+          <Grid container spacing={2}>
+            {cartItems.map((item) => {
+              // Determine object position for image based on category
+              const objectPosition = ['Pants', 'Sweatpants', 'Jeans'].includes(item.category) ? 'bottom' : 'top';
+              
+              return (
+                <Grid item xs={12} sm={6} md={4} key={item.id}>
+                  <Card sx={{ border: '1px solid #000', boxShadow: 3 }}>
+                    <CardContent>
+                      <Grid container spacing={2} alignItems="center">
+                        <Grid item>
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              objectFit: "cover",
+                              objectPosition: objectPosition, // Position the image
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs>
+                          <Typography variant="body1" fontWeight="bold">{item.name}</Typography>
+                          <Typography variant="body2" fontStyle="italic">Size: {item.size}</Typography>
+                          <Typography variant="body2" fontStyle="italic">Quantity: {item.quantity}</Typography>
+                        </Grid>
+                        <Grid item>
+                          <IconButton onClick={() => removeItemFromCart(item.id)}>
+                            <DeleteIcon color="error" />
+                          </IconButton>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+          <Button
+            fullWidth
+            variant="contained"
+            sx={{
+              backgroundColor: '#47b49c',
+              '&:hover': { backgroundColor: '#3c9b7b' },
+              marginTop: '16px',
+              padding: '12px',
+              fontSize: '16px',
+            }}
+            onClick={handleCheckout} // Call handleCheckout when button is clicked
+          >
+            Proceed to Checkout
+          </Button>
+        </>
+      )}
+    </div>
   );
 };
 

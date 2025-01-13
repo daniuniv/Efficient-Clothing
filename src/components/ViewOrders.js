@@ -1,157 +1,231 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { db } from "../firebaseConfig";
-import { collection, getDocs, doc, getDoc, addDoc } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore"; // Use onSnapshot for real-time updates
 import { getAuth } from "firebase/auth";
+import {
+  Container,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress,
+  Box,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
+import { styled } from "@mui/system";
+
+// Custom styled TableCell for consistent design
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  fontWeight: 600,
+  padding: theme.spacing(2),
+  textAlign: "center",
+  border: "1px solid black", // Border for each table cell
+}));
+
+// Custom styled Table for adding black outline
+const StyledTable = styled(Table)(({ theme }) => ({
+  border: "1px solid black", // Border for the entire table
+  "& thead": {
+    backgroundColor: "#f5f5f5", // Light gray background for the header
+  },
+  "& th, td": {
+    border: "1px solid black", // Adds border to table cells
+  },
+}));
 
 const ViewOrders = () => {
   const [orders, setOrders] = useState([]);
-  const [storeManagers, setStoreManagers] = useState([]);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState(""); // Filter for status
+  const [sortDirection, setSortDirection] = useState("desc"); // Toggle sort order: "asc" or "desc"
   const auth = getAuth();
   const userId = auth.currentUser?.uid;
-  const [statusFilter, setStatusFilter] = useState("");
 
-  const fetchOrders = useCallback(async () => {
-    try {
-      setLoading(true);
-      const ordersSnapshot = await getDocs(collection(db, "orders"));
-      const ordersList = ordersSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      // Verifică dacă ordersList are date
-      if (!ordersList.length) {
-        setOrders([]);
-        return;
-      }
-
-      const filteredOrders = ordersList
-        .map((order) => order.subOrders || []) // Asigură-te că subOrders există
-        .flat()
-        .filter(
-          (order) =>
-            order.customerId?.includes(userId) &&
-            (!statusFilter || order.status === statusFilter)
-        );
-
-      setOrders(filteredOrders); // Setează ordinele filtrate
-    } catch (err) {
-      console.error("Error fetching orders:", err.message);
-      setError("Failed to fetch orders. Please try again later.");
-    } finally {
-      setLoading(false); // Oprește starea de încărcare
-    }
-  }, [userId, statusFilter]);
-
-  const fetchStoreManagers = useCallback(async () => {
-    try {
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      const storeManagersList = usersSnapshot.docs
-        .filter((doc) => doc.data().role === "storeManager")
-        .map((doc) => doc.id);
-      setStoreManagers(storeManagersList);
-    } catch (err) {
-      console.error("Error fetching store managers:", err.message);
-      setError("Failed to fetch store managers.");
-    }
-  }, []);
-
+  // Fetch orders for the logged-in user in real-time
   useEffect(() => {
-    if (userId) {
-      fetchOrders();
-     // fetchStoreManagers();
-    }
-  }, [fetchOrders, userId]);
+    const unsubscribe = onSnapshot(collection(db, "orders"), (ordersSnapshot) => {
+      try {
+        setLoading(true);
+        const ordersList = ordersSnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((order) => order.customerId === userId); // Filter orders by userId
+
+        // Sort orders by the `createdAt` timestamp in the desired direction
+        const sortedOrders = ordersList.sort((a, b) => {
+          const dateA = a.createdAt?.seconds || 0;
+          const dateB = b.createdAt?.seconds || 0;
+          return sortDirection === "desc" ? dateB - dateA : dateA - dateB;
+        });
+
+        // Apply status filter if any
+        const filteredOrders = statusFilter
+          ? sortedOrders.filter((order) => order.status === statusFilter)
+          : sortedOrders;
+
+        setOrders(filteredOrders);
+      } catch (err) {
+        setError("Failed to load orders.");
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // Cleanup on component unmount
+    return () => unsubscribe();
+  }, [userId, statusFilter, sortDirection]);
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">My Orders</h2>
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Your Orders
+      </Typography>
 
-      {error && <p className="text-danger text-center">{error}</p>}
-
-      {loading ? (
-        <div className="text-center">Loading orders...</div>
-      ) : (
-        <div>
-          {/* Status Filter Dropdown */}
-          <div className="mb-3">
-            <label htmlFor="statusFilter" className="form-label">
-              Filter by Status:
-            </label>
-            <select
-              id="statusFilter"
-              className="form-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="">All</option>
-              <option value="Processing">Processing</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Delivered">Delivered</option>
-            </select>
-          </div>
-
-          {orders.length === 0 ? (
-            <div className="text-center">You have no orders for this store.</div>
-          ) : (
-            <table className="table table-bordered table-striped">
-              <thead className="thead-dark">
-                <tr>
-                  <th>Order ID</th>
-                  <th>Delivery Address</th>
-                  <th>Items</th>
-                  <th>Total Amount</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order, index) => (
-                  <tr key={index}>
-                    <td>{order.orderId || "N/A"}</td>
-                    <td>
-                      {order.deliveryAddress
-                        ? `${order.deliveryAddress.street || "N/A"}, ${
-                            order.deliveryAddress.city || "N/A"
-                          }`
-                        : "N/A"}
-                    </td>
-                    <td>
-                      {order.items && order.items.length > 0 ? (
-                        <ul>
-                          {order.items.map((item, index) => (
-                            <li key={index}>
-                              <img
-                                src={item.image}
-                                style={{
-                                  width: "50px",
-                                  height: "50px",
-                                  objectFit: "cover",
-                                  marginRight: "10px",
-                                  marginBottom: "10px",
-                                }}
-                                
-                              />
-                              {item.name} (x{item.quantity}) - $
-                              {item.price.toFixed(2)}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        "No items"
-                      )}
-                    </td>
-                    <td>${order.totalAmount?.toFixed(2) || "0.00"}</td>
-                    <td>{order.status || "N/A"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+      {loading && (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="100px">
+          <CircularProgress />
+        </Box>
       )}
-    </div>
+      {error && <Typography color="error">{error}</Typography>}
+
+      {/* Filters (aligned in a row) */}
+      <Box display="flex" justifyContent="space-between" gap={2} marginBottom={2}>
+        {/* Status Filter Dropdown */}
+        <FormControl size="small" fullWidth sx={{ width: '200px' }}>
+          <InputLabel>Status Filter</InputLabel>
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            label="Status Filter"
+            size="small"
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="Processing">Processing</MenuItem>
+            <MenuItem value="Shipped">Shipped</MenuItem>
+            <MenuItem value="Pending">Pending</MenuItem>
+          </Select>
+        </FormControl>
+
+        {/* Sort Direction Toggle */}
+        <FormControl size="small" fullWidth sx={{ width: "auto" }}>
+          <InputLabel>Sort by Date</InputLabel>
+          <Select
+            value={sortDirection}
+            onChange={(e) => setSortDirection(e.target.value)}
+            label="Sort by Date"
+            size="small"
+          >
+            <MenuItem value="desc">Newest First</MenuItem>
+            <MenuItem value="asc">Oldest First</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
+      {orders.length === 0 ? (
+        <Typography>No orders found.</Typography>
+      ) : (
+        <TableContainer component={Paper}>
+          <StyledTable>
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>Order ID</StyledTableCell>
+                <StyledTableCell>Item Images</StyledTableCell>
+                <StyledTableCell>Item Name</StyledTableCell>
+                <StyledTableCell>Size</StyledTableCell>
+                <StyledTableCell>Quantity</StyledTableCell>
+                <StyledTableCell>Order Placed</StyledTableCell>
+                <StyledTableCell>Status</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow key={order.id}>
+                  <StyledTableCell component="th" scope="row">
+                    {order.orderId || `order-${order.id}`}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    {order.subOrders?.map((subOrder, index) => (
+                      <Box key={index} display="flex" flexDirection="column" alignItems="center">
+                        {subOrder.items?.map((item, itemIndex) => {
+                          const imageUrls = Array.isArray(item.image)
+                            ? item.image
+                            : item.image
+                            ? item.image.split(",").map((url) => url.trim())
+                            : [];
+                          const firstImageUrl = imageUrls[0];
+
+                          return (
+                            <Box key={itemIndex} display="flex" alignItems="center" marginBottom="5px">
+                              {firstImageUrl && (
+                                <img
+                                  src={firstImageUrl}
+                                  alt={item.name}
+                                  style={{
+                                    width: 50,
+                                    height: 50,
+                                    objectFit: "cover",
+                                    marginTop: "10px",
+                                    marginRight: "5px",
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    ))}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    {order.subOrders?.map((subOrder, index) => (
+                      <div key={index}>
+                        {subOrder.items?.map((item, i) => (
+                          <div key={i}>
+                            <Typography variant="body2">{item.name}</Typography>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    {order.subOrders?.map((subOrder, index) => (
+                      <div key={index}>
+                        {subOrder.items?.map((item, i) => (
+                          <div key={i}>
+                            <Typography variant="body2">{item.size}</Typography>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    {order.subOrders?.map((subOrder, index) => (
+                      <div key={index}>
+                        {subOrder.items?.map((item, i) => (
+                          <div key={i}>
+                            <Typography variant="body2">{item.quantity}</Typography>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    {new Date(order.createdAt?.seconds * 1000).toLocaleDateString()}
+                  </StyledTableCell>
+                  <StyledTableCell>{order.status}</StyledTableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </StyledTable>
+        </TableContainer>
+      )}
+    </Container>
   );
 };
 

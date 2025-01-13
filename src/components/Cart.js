@@ -1,73 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
-import { getAuth } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useHistory } from 'react-router-dom'; 
+import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore';
 
-const Cart = () => {
+const Cart = ({ userId }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const auth = getAuth(); // Firebase authentication instance
+  const history = useHistory();
 
   useEffect(() => {
+    if (!userId) return;
+
+    // Fetch the cart items for the user
     const fetchCartItems = async () => {
-      if (!auth.currentUser) {
-        setError('You must be logged in to view your cart');
-        setLoading(false);
-        return;
-      }
-
-      const userId = auth.currentUser.uid;
-      const cartRef = collection(db, 'cart');
-      const q = query(cartRef, where('userId', '==', userId));
-
       try {
+        const cartRef = collection(db, 'Cart');
+        const q = query(cartRef, where('userId', '==', userId)); // Filter by userId
         const querySnapshot = await getDocs(q);
-        const items = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        if (items.length === 0) {
-          setError('Your cart is empty.');
-        } else {
+        
+        if (!querySnapshot.empty) {
+          const items = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
           setCartItems(items);
         }
         setLoading(false);
-      } catch (err) {
-        setError('Error fetching cart items');
+      } catch (error) {
+        console.error('Error fetching cart items:', error);
         setLoading(false);
       }
     };
 
     fetchCartItems();
-  }, [auth.currentUser]);
+  }, [userId]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const removeFromCart = async (itemId) => {
+    try {
+      const itemRef = doc(db, 'Cart', itemId);
+      await deleteDoc(itemRef);
+      setCartItems(cartItems.filter(item => item.id !== itemId));
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
+  };
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  const placeOrder = async () => {
+    try {
+      const orderData = {
+        customerId: userId,
+        items: cartItems.map(item => ({ ...item, quantity: item.quantity })),
+        totalAmount: cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
+        createdAt: new Date(),
+        status: 'Pending',
+        deliveryAddress: {} // Add delivery address logic as needed
+      };
+
+      await addDoc(collection(db, 'Orders'), orderData);
+
+      // Remove items from Cart
+      for (let item of cartItems) {
+        await removeFromCart(item.id);
+      }
+      
+      history.push('/view-orders');
+    } catch (error) {
+      console.error('Error placing order:', error);
+    }
+  };
 
   return (
-    <div className="container mt-5">
-      <h2>Your Cart</h2>
-      {cartItems.length === 0 ? (
-        <div>Your cart is empty.</div>
+    <div>
+      <h1>My Cart</h1>
+      {loading ? (
+        <p>Loading...</p>
+      ) : cartItems.length === 0 ? (
+        <p>Your cart is empty</p>
       ) : (
-        <div>
-          {cartItems.map(item => (
-            <div key={item.id} className="cart-item">
-              <h4>{item.name}</h4>
-              <p>Size: {item.size}</p>
-              <p>Price: ${item.price}</p>
-              <p>Quantity: {item.quantity}</p>
-              <p>Image: {item.images}</p>
-            </div>
-          ))}
-        </div>
+        <>
+          <ul>
+            {cartItems.map(item => (
+              <li key={item.id}>
+                <p>{item.name} - {item.quantity} x ${item.price}</p>
+                <button onClick={() => removeFromCart(item.id)}>Remove</button>
+              </li>
+            ))}
+          </ul>
+          <button onClick={placeOrder} disabled={cartItems.length === 0}>
+            Place Order
+          </button>
+        </>
       )}
     </div>
   );

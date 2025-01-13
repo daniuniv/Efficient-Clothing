@@ -1,225 +1,195 @@
-import React, { useState, useEffect } from 'react';
-import { db } from '../firebaseConfig';
-import { getAuth } from 'firebase/auth';
-import { collection, query, where, getDocs, writeBatch, doc, getFirestore, FieldValue, increment} from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
-import { TextField, Button, Box, Typography, Paper, LinearProgress } from '@mui/material';
-
+import React, { useState, useEffect } from "react";
+import { db } from "../firebaseConfig";
+import { collection, getDocs, setDoc, deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  CircularProgress,
+  Grid,
+  Paper,
+} from "@mui/material";
+import { styled } from "@mui/system";
 
 const Checkout = () => {
   const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [deliveryAddress, setDeliveryAddress] = useState({ city: '', postalCode: '', street: '' });
-  const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
   const [totalAmount, setTotalAmount] = useState(0);
-  const auth = getAuth(); // Firebase authentication instance
-  const navigate = useNavigate(); // Navigation hook
+  const [deliveryAddress, setDeliveryAddress] = useState({ street: "", city: "", postalCode: "" });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
 
   useEffect(() => {
     const fetchCartItems = async () => {
-      if (!auth.currentUser) {
-        setError('You must be logged in to proceed to checkout');
-        setLoading(false);
-        return;
-      }
-
-      const userId = auth.currentUser.uid;
-      const cartRef = collection(db, 'cart');
-      const q = query(cartRef, where('userId', '==', userId));
-
       try {
-        const querySnapshot = await getDocs(q);
-        const items = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        setLoading(true);
+        const cartSnapshot = await getDocs(collection(db, "cart"));
+        const cartList = cartSnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((item) => item.userId === userId);
 
-        if (items.length === 0) {
-          setError('Your cart is empty.');
-        } else {
-          setCartItems(items);
-          const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-          setTotalAmount(total);
-        }
-        setLoading(false);
+        setCartItems(cartList);
+        const total = cartList.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        setTotalAmount(total);
       } catch (err) {
-        setError('Error fetching cart items');
+        setError("Failed to load cart items.");
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchCartItems();
-  }, [auth.currentUser]);
-
-  const handlePlaceOrder = async () => {
-    // Validate delivery address
-    if (!deliveryAddress.city || !deliveryAddress.postalCode || !deliveryAddress.street) {
-      setError('Please fill in all address fields');
-      return;
+    if (userId) {
+      fetchCartItems();
     }
+  }, [userId]);
 
-    const userId = auth.currentUser.uid;
-    const orderId = `order-${Date.now()}`; // Generate unique order ID
-
-    // Ensure all cart item data is available and avoid undefined values
-    const items = cartItems.map(item => ({
-      name: item.name || '', // Default to empty string if not set
-      price: item.price || 0, // Default to 0 if not set
-      quantity: item.quantity || 0, // Default to 0 if not set
-      size: item.size || '', // Default to empty string if not set
-      productId: item.productId || '', // Default to empty string if not set
-      image: item.image || '', // Default to empty string if not set
-      storeName: item.storeName || '',
-    }));
-
-    // Check if all fields are valid
-    if (items.some(item => !item.name || !item.price || !item.quantity || !item.size || !item.productId)) {
-      setError('One or more cart items are missing required data');
-      return;
-    }
-
-    //console.log(items[0]);
-    
-    const groupedItems = items.reduce((acc, item) => {
-        if (!acc[item.storeName]) {
-            acc[item.storeName] = [];
+  const handleCheckout = async () => {
+    try {
+      const groupedItems = cartItems.reduce((acc, item) => {
+        const storeName = item.storeName || "Unknown Store";
+        if (!acc[storeName]) {
+          acc[storeName] = [];
         }
-        acc[item.storeName].push(item);
+        acc[storeName].push(item);
         return acc;
-    }, {});
+      }, {});
 
-    const newOrder = {
-      customerId: userId,
-      deliveryAddress,
-      orderId,
-      status: 'Processing',
-      subOrders: Object.keys(groupedItems).map(storeName => ({
-        storeName,
-        items: groupedItems[storeName],
+      const subOrders = [];
+
+      for (const store in groupedItems) {
+        const items = [];
+        for (let item of groupedItems[store]) {
+          const itemRef = doc(db, "inventory", item.productId);
+          const itemSnap = await getDoc(itemRef);
+          const itemData = itemSnap.data();
+          const imageUrls = itemData ? itemData.images : [];
+          items.push({
+            name: item.name,
+            size: item.size,
+            quantity: item.quantity,
+            price: item.price,
+            productId: item.productId,
+            image: imageUrls,
+            storeName: item.storeName,
+          });
+        }
+        subOrders.push({
+          items,
+          storeName: store,
+        });
+      }
+
+      const orderId = `order-${Date.now()}`;
+      const newOrder = {
         customerId: userId,
-        deliveryAddress: deliveryAddress,
-        orderId: orderId,
-        status: 'Processing',
+        deliveryAddress,
+        orderId,
+        subOrders,
+        totalAmount,
+        status: "Processing",
         createdAt: new Date(),
         updatedAt: new Date(),
-        totalAmount: groupedItems[storeName].reduce((acc, item) => acc + item.price * item.quantity, 0),
-        paymentMethod,
-    })),
-    
-      
-      //items,
-      //storeName: '', // items.map(item => item.storeName) You can dynamically get the store name if needed
-      //totalAmount,
-      
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      paymentMethod,
-    };
-    
-    
-    console.log('New Order Data:', newOrder); // Log the order data for debugging
+      };
 
-    // Add to Orders collection
-    const batch = writeBatch(db); // Create a batch for atomic operation
-    try {
-      // Add order to Orders collection
-      const orderRef = doc(collection(db, 'orders'), orderId);
-      batch.set(orderRef, newOrder);
+      const orderRef = doc(db, "orders", orderId);
+      await setDoc(orderRef, newOrder);
 
-      // Remove items from Cart collection
-      cartItems.forEach(item => {
-        const cartDocRef = doc(db, 'cart', item.id);
-        batch.delete(cartDocRef);
+      for (let item of cartItems) {
+        await deleteDoc(doc(db, "cart", item.id));
+      }
 
-        // Update the product stock in the inventory
-        const productRef = doc(db, 'inventory', item.productId);
-        batch.update(productRef, {
-          stock: increment(-item.quantity), // Decrease stock by the quantity in the cart
+      for (let item of cartItems) {
+        const itemRef = doc(db, "inventory", item.productId);
+        const itemSnap = await getDoc(itemRef);
+        const itemData = itemSnap.data();
+        const updatedSizes = itemData.sizes.map((sizeObj) => {
+          if (sizeObj.size === item.size) {
+            sizeObj.quantity -= item.quantity;
+          }
+          return sizeObj;
         });
-      });
+        await updateDoc(itemRef, { sizes: updatedSizes });
+      }
 
-      // Commit batch operations
-      await batch.commit();
-
-      // Show success message
-      alert('Your order has been confirmed!');
-      navigate('/your-orders'); // Navigate back to the home page or catalog
+      alert("Order placed successfully!");
     } catch (err) {
-      console.error('Error placing order:', err);
-      setError(`There was an error placing your order: ${err.message || err}`);
+      setError("Checkout failed. Please try again.");
     }
   };
-  if (loading) {
-    return (
-      <Box sx={{ width: '100%', position: 'fixed', top: '64px', left: 0, zIndex: 999 }}>
-        <LinearProgress sx={{ height: 5, borderRadius: 2, backgroundColor: '#5be9c5' }} color="43d5b0" />
-      </Box>
-    );
-  }
+
   return (
-    <div className="container mt-5">
-      <Typography variant="h4" gutterBottom>Checkout</Typography>
+    <Container maxWidth="sm" sx={{ padding: 3 }}>
+      <Paper elevation={3} sx={{ padding: 3, borderRadius: 2 }}>
+        <Typography variant="h4" gutterBottom align="center">Checkout</Typography>
 
-      <Paper elevation={3} style={{ padding: '20px' }}>
-        <Typography variant="h6" gutterBottom>Delivery Address</Typography>
-        <TextField
-          label="Street"
-          value={deliveryAddress.street}
-          onChange={(e) => setDeliveryAddress({ ...deliveryAddress, street: e.target.value })}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="City"
-          value={deliveryAddress.city}
-          onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Postal Code"
-          value={deliveryAddress.postalCode}
-          onChange={(e) => setDeliveryAddress({ ...deliveryAddress, postalCode: e.target.value })}
-          fullWidth
-          margin="normal"
-        />
-      </Paper>
+        {loading && (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="100px">
+            <CircularProgress />
+          </Box>
+        )}
 
-      {error && <Typography color="error" variant="body2">{error}</Typography>}
+        {error && <Typography color="error">{error}</Typography>}
 
-      <Box mt={3}>
-        <Typography variant="h6" gutterBottom>Payment Method</Typography>
-        <TextField
-          label="Payment Method"
-          value={paymentMethod}
-          disabled
-          fullWidth
-          margin="normal"
-        />
-      </Box>
-
-      <Box mt={3}>
-        <Typography variant="h6" gutterBottom>Total Amount: ${totalAmount}</Typography>
-      </Box>
-
-       <Button
-                variant="contained"
-                color="primary"
+        <Box marginBottom={2}>
+          <Typography variant="h6" gutterBottom>Delivery Address</Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                label="Street"
+                variant="outlined"
                 fullWidth
-                onClick={handlePlaceOrder}
-                sx={{
-                  mt: 2,
-                  backgroundColor: '#43d5b0', // Custom color
-                  '&:hover': {
-                    backgroundColor: '#58dab9', // Hover color
-                  },
-                }}
-              //  disabled={cartItems.length === 0} // Disable the button when the cart is empty
-              >
-                Confirm Order
-              </Button>
-    </div>
+                value={deliveryAddress.street}
+                onChange={(e) => setDeliveryAddress({ ...deliveryAddress, street: e.target.value })}
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="City"
+                variant="outlined"
+                fullWidth
+                value={deliveryAddress.city}
+                onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })}
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Postal Code"
+                variant="outlined"
+                fullWidth
+                value={deliveryAddress.postalCode}
+                onChange={(e) => setDeliveryAddress({ ...deliveryAddress, postalCode: e.target.value })}
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+          </Grid>
+        </Box>
+
+        <Typography variant="h6" gutterBottom>Total: ${totalAmount.toFixed(2)}</Typography>
+
+        <Button
+  variant="contained"
+  fullWidth
+  onClick={handleCheckout}
+  sx={{
+    backgroundColor: '#47b49c',
+    '&:hover': {
+      backgroundColor: '#3c9b7b',
+    },
+    padding: '12px',
+    fontSize: '16px',
+  }}
+>
+  Confirm Order
+</Button>
+
+      </Paper>
+    </Container>
   );
 };
 

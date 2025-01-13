@@ -108,14 +108,10 @@ const ProductDetail = () => {
       return;
     }
   
-    console.log('Product object:', product);
-  
     if (!product.id || !product.name || !product.images || !product.price || !product.storeName) {
       alert('Product data is incomplete.');
       return;
     }
-  
-    console.log('Adding to cart:', { productId: product.id, size, quantity });
   
     const userId = auth.currentUser.uid;
     const newCartItem = {
@@ -146,7 +142,10 @@ const ProductDetail = () => {
         return;
       }
   
+      // Add the new item to the cart collection
       await setDoc(doc(collection(db, 'cart'), `${userId}-${product.id}-${size}`), newCartItem);
+  
+      // Update confirmation and reset form fields
       setConfirmation('Product added to cart!');
       setSize('');
       setQuantity(1);
@@ -157,6 +156,7 @@ const ProductDetail = () => {
     }
   };
   
+
   const handleRatingSubmit = async () => {
     if (!auth.currentUser) {
       alert('You must be logged in to submit a review.');
@@ -220,14 +220,8 @@ const ProductDetail = () => {
       </Box>
     );
   }
-  
 
-  let sizes = [];
-  if (typeof product.sizes === 'string') {
-    sizes = product.sizes.split(',').map((size) => size.trim());
-  } else if (Array.isArray(product.sizes)) {
-    sizes = product.sizes.map((size) => size.trim());
-  }
+  const sizes = product.sizes || [];
 
   return (
     <div className="container mt-5">
@@ -250,206 +244,133 @@ const ProductDetail = () => {
             ))}
           </Carousel>
 
-        {/* Customer Reviews Section */}
-<h4 className="mt-5">Customer Reviews</h4>
-<p>
-  <strong>Average Rating:</strong>{' '}
-  {averageRating !== null ? averageRating.toFixed(2) : 'No ratings yet'} / 5
-</p>
-<div>
-  {reviews.map((review) => (
-    <div key={review.reviewId} className="border-bottom pb-3 mb-3">
-      <Rating value={review.rating} readOnly />
-      <p><strong>{review.customerName}</strong> says:</p>
-      <p>{review.comment}</p>
-      <p className="text-muted">
-        {review.createdAt?.seconds
-          ? new Date(review.createdAt.seconds * 1000).toLocaleDateString()
-          : 'Unknown date'}
-      </p>
-    </div>
-  ))}
-</div>
-
+          <h4 className="mt-5">Customer Reviews</h4>
+          <p>
+            <strong>Average Rating:</strong>{' '}
+            {averageRating !== null ? averageRating.toFixed(2) : 'No ratings yet'} / 5
+          </p>
+          <div>
+            {reviews.map((review) => (
+              <div key={review.reviewId} className="border-bottom pb-3 mb-3">
+                <Rating value={review.rating} readOnly />
+                <p><strong>{review.customerName}</strong> says:</p>
+                <p>{review.comment}</p>
+                <p className="text-muted">
+                  {review.createdAt?.seconds
+                    ? new Date(review.createdAt.seconds * 1000).toLocaleDateString()
+                    : 'Unknown date'}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="col-md-6">
-          <h2 style={{ fontFamily: '"Gotham", sans-serif', fontWeight: 'bold', fontStyle: 'italic', fontSize: '25px', lineHeight: '24px', textTransform: 'uppercase' }}>
-            {product.name}
-          </h2>
+          <h2>{product.name}</h2>
           <p>{product.description}</p>
-          <h3 style={{ fontWeight: 'bold', fontSize: '24px', color: '#333' }}>${product.price}</h3>
-
-          <p className="mb-3"><strong>Available Quantity:</strong> {product?.stock === 0 ? 'Out of stock' : product?.stock}</p>
-
-          {product?.stock === 0 && <div className="alert alert-danger">This item is currently out of stock.</div>}
+          <h3>${product.price}</h3>
 
           <div className="mb-3">
-  <strong>Available Sizes:</strong>
-  <div className="d-flex flex-wrap">
-    {sizes.map((sizeOption) => (
-      <Button
-        key={sizeOption}
-        onClick={() => setSize(sizeOption)}
-        disabled={product?.stock === 0}
-        className={`variant-size-item ${size === sizeOption ? 'selected' : ''}`}
-        style={{
-          margin: '5px',
-          minWidth: '72px',
-          height: '35px',
-          fontSize: '12px',
-          borderRadius: '0.45rem',
-          textTransform: 'capitalize',
-          backgroundColor: product?.stock === 0 
-            ? '#B0B0B0' 
-            : (size === sizeOption ? '#47b49c' : '#333'),
-          color: '#fff',
-          transition: 'background-color 0.2s ease',
-          border: '2px solid #fff',
-          outline: 'none',
-          boxShadow: '0 0 3px rgba(255, 255, 255, 0.2)',
-        }}
-        onMouseEnter={(e) => {
-          if (product?.stock > 0) {
-            e.target.style.backgroundColor = '#a0a0a0'; // Light gray hover color
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (product?.stock > 0) {
-            e.target.style.backgroundColor = size === sizeOption ? '#47b49c' : '#333';
-          }
-        }}
-      >
-        {sizeOption}
-      </Button>
-    ))}
-  </div>
-</div>
+            <strong>Available Sizes:</strong>
+            <div className="d-flex flex-wrap">
+              {sizes.map((sizeOption) => (
+                <Button
+                  key={sizeOption.size}
+                  onClick={() => setSize(sizeOption.size)}
+                  disabled={sizeOption.quantity === 0}
+                  className={`variant-size-item ${size === sizeOption.size ? 'selected' : ''}`}
+                  style={{
+                    margin: '5px',
+                    minWidth: '72px',
+                    height: '35px',
+                    fontSize: '12px',
+                    borderRadius: '0.45rem',
+                    textTransform: 'capitalize',
+                    backgroundColor: sizeOption.quantity === 0 
+                      ? '#B0B0B0' 
+                      : (size === sizeOption.size ? '#47b49c' : '#333'),
+                    color: '#fff',
+                    transition: 'background-color 0.2s ease',
+                    border: '2px solid #fff',
+                    outline: 'none',
+                    boxShadow: '0 0 3px rgba(255, 255, 255, 0.2)',
+                  }}
+                >
+                  {sizeOption.size}
+                </Button>
+              ))}
+            </div>
+          </div>
 
+          <div className="d-flex align-items-center">
+            <label htmlFor="quantity" style={{ marginRight: '10px' }}>Quantity:</label>
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, e.target.value))}
+              style={{ width: '60px', marginRight: '10px' }}
+            />
+          </div>
 
-          <div className="d-flex align-items-center mb-3">
-  <button
-    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-    style={{
-      backgroundColor: '#f5f5f5',
-      color: '#333',
-      width: '40px',
-      height: '40px',
-      fontSize: '20px',
-      borderRadius: '50%',
-      border: 'none',
-      marginRight: '10px',
-    }}
-    className="quantity-btn"
-    disabled={product?.stock === 0} // Disable button if out of stock
-  >
-    -
-  </button>
-  <span
-    style={{
-      fontSize: '18px',
-      fontWeight: 'bold',
-      margin: '0 10px',
-    }}
-  >
-    {quantity}
-  </span>
-  <button
-    onClick={() => setQuantity(Math.min(product?.stock, quantity + 1))}
-    style={{
-      backgroundColor: '#f5f5f5',
-      color: '#333',
-      width: '40px',
-      height: '40px',
-      fontSize: '20px',
-      borderRadius: '50%',
-      border: 'none',
-      marginLeft: '10px',
-    }}
-    className="quantity-btn"
-    disabled={product?.stock === 0} // Disable button if out of stock
-  >
-    +
-  </button>
-
-  <button
-    className="btn mt-3"
-    style={{
-      backgroundColor: '#5be9c5',
-      color: '#fff',
-      borderRadius: '5px',
-      fontSize: '18px',
-      padding: '10px 20px',
-      marginLeft: '20px',
-      width: '303px',
-      height: '50px',
-      border: 'none',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-      transition: 'background-color 0.3s ease',
-    }}
-    onMouseEnter={(e) => {
-      e.target.style.backgroundColor = '#47b49c';
-    }}
-    onMouseLeave={(e) => {
-      e.target.style.backgroundColor = '#5be9c5';
-    }}
-    onClick={handleAddToCart}
-    disabled={product?.stock === 0 || quantity === 0} // Disable if out of stock
-  >
-    Add to Cart
-  </button>
-</div>
-
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddToCart}
+            sx={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              fontSize: '16px',
+              backgroundColor: '#47b49c',
+              '&:hover': { backgroundColor: '#3c9b7b' },
+            }}
+          >
+            Add to Cart
+          </Button>
 
           {confirmation && (
-            <div className="alert alert-success mt-3">{confirmation}</div>
+            <div style={{ marginTop: '20px', color: '#28a745' }}>
+              <strong>{confirmation}</strong>
+            </div>
           )}
 
-          {/* Rating Component */}
-          <h4 className="mt-4">Rate this Product</h4>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Rating
-              name="rating"
-              value={value}
-              onChange={(event, newValue) => setValue(newValue)}
-              onChangeActive={(event, newHover) => setHover(newHover)}
-              precision={0.5}
-              icon={<StarIcon fontSize="inherit" />}
-            />
-            {value !== null && (
-              <Box sx={{ ml: 2 }}>{getLabelText(hover !== -1 ? hover : value)}</Box>
-            )}
-          </Box>
-          
-          {/* Comment Section */}
-          <textarea
-            placeholder="Leave a comment"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            style={{
-              width: '100%',
-              height: '100px',
-              padding: '10px',
-              borderRadius: '5px',
-              marginTop: '10px',
-              borderColor: '#ccc',
-              fontSize: '14px',
-            }}
-          ></textarea>
-          <button
-            className="btn btn-light mt-3"
-            style={{
-              backgroundColor: '#F0E68C',
-              color: '#333',
-              padding: '10px 20px',
-              borderRadius: '5px',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-            onClick={handleRatingSubmit}
-          >
-            Submit Review
-          </button>
+          <div className="mt-5">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Rating
+                name="hover-feedback"
+                value={value}
+                precision={0.5}
+                getLabelText={getLabelText}
+                onChange={(event, newValue) => setValue(newValue)}
+                onChangeActive={(event, newHover) => setHover(newHover)}
+              />
+              {value !== null && (
+                <Box sx={{ ml: 2 }}>
+                  {labels[hover !== -1 ? hover : value]}
+                </Box>
+              )}
+            </Box>
+            <div>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Write your review..."
+                rows="4"
+                cols="50"
+                style={{ marginTop: '10px', width: '100%' }}
+              />
+            </div>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleRatingSubmit}
+              sx={{ marginTop: '10px' }}
+            >
+              Submit Review
+            </Button>
+          </div>
         </div>
       </div>
     </div>
