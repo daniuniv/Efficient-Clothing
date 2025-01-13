@@ -39,14 +39,14 @@ const Catalog = () => {
       }
     
       // Apply size filter
+      // Apply size filter
       if (selectedSize) {
         productList = productList.filter(product => {
+          // Check if sizes is an array of objects with 'size' field
           if (Array.isArray(product.sizes)) {
-            return product.sizes.includes(selectedSize); // Check if sizes is an array
-          } else if (typeof product.sizes === 'string') {
-            return product.sizes.split(',').includes(selectedSize); // If sizes is a string, split it
+            return product.sizes.some(size => size.size === selectedSize); // Check if any size matches the selectedSize
           }
-          return false; // In case sizes is neither an array nor a string
+          return false; // In case sizes is neither an array nor undefined
         });
       }
     
