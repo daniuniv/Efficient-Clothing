@@ -74,7 +74,16 @@ const CustomerOrders = () => {
               ...updatedSubOrders[subOrderIndex],
               status: newStatus,
             };
+            
+            // Check if all sub-orders have the same status
+            const allSubOrdersSameStatus = updatedSubOrders.every(subOrder => subOrder.status === newStatus);
 
+            // If all sub-orders have the same status, update the main order's status
+            if (allSubOrdersSameStatus) {
+              await updateDoc(orderRef, {
+                status: newStatus, // Update the main order's status
+              });
+            }
             // Update the entire order with the new subOrders array
             await updateDoc(orderRef, {
               subOrders: updatedSubOrders,
