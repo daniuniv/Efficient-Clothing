@@ -252,7 +252,18 @@ const ProductDetail = () => {
           <div>
             {reviews.map((review) => (
               <div key={review.reviewId} className="border-bottom pb-3 mb-3">
-                <Rating value={review.rating} readOnly />
+                <Rating
+                  value={review.rating}
+                  readOnly
+                  sx={{
+                    '& .MuiRating-iconFilled': {
+                      color: 'rgb(255, 157, 0)', // Color for filled stars
+                    },
+                    '& .MuiRating-iconHover': {
+                      color: 'rgb(255, 157, 0)', // Color for hovered stars (though readOnly won't hover)
+                    },
+                  }}
+                />
                 <p><strong>{review.customerName}</strong> says:</p>
                 <p>{review.comment}</p>
                 <p className="text-muted">
@@ -334,13 +345,14 @@ const ProductDetail = () => {
           setQuantity(quantity - 1);
         }
       }} 
+      className={`quantity-decrement ${!size ? 'disabled' : ''}`}
       disabled={!size}
       style={{
         marginRight: '10px', 
         fontSize: '20px', 
         width: '40px', 
         height: '40px', 
-        backgroundColor: size ? 'transparent' : '#f2f2f2', 
+        backgroundColor: size ? '1px solidrgba(211, 211, 211, 0.47)' : '#f2f2f2', 
         color: size ? 'black' : '#a1a1a1', 
         border: size ? '1px solid transparent' : '1px solid #d3d3d3', 
         textAlign: 'center',
@@ -356,7 +368,6 @@ const ProductDetail = () => {
     >
       -
     </Button>
-    
     <span style={{
       width: '40px', 
       height: '40px', 
@@ -387,7 +398,7 @@ const ProductDetail = () => {
         fontSize: '20px', 
         width: '40px', 
         height: '40px', 
-        backgroundColor: size ? 'transparent' : '#f2f2f2', 
+        backgroundColor: size ? '1px solidrgba(211, 211, 211, 0.47)' : '#f2f2f2', 
         color: size ? 'black' : '#a1a1a1', 
         border: size ? '1px solid transparent' : '1px solid #d3d3d3', 
         textAlign: 'center',
@@ -446,6 +457,17 @@ const ProductDetail = () => {
                 getLabelText={getLabelText}
                 onChange={(event, newValue) => setValue(newValue)}
                 onChangeActive={(event, newHover) => setHover(newHover)}
+                sx={{
+                  '& .MuiRating-iconFilled': {
+                    color: 'rgb(255, 157, 0)', // Custom star color when selected
+                  },
+                  '& .MuiRating-iconHover': {
+                    color: 'rgb(255, 157, 0)', // Custom star color on hover
+                  },
+                  '& .MuiRating-iconEmpty': {
+                    color: 'rgba(255, 157, 0, 0.5)', // Lighter color for empty stars
+                  },
+                }}
               />
               {value !== null && (
                 <Box sx={{ ml: 2 }}>

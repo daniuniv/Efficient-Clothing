@@ -248,3 +248,21 @@ body.dark-mode .MuiBox-root.css-dvxtzn{
 body.dark-mode .MuiTypography-root.MuiTypography-body2{
   background-color: #1e1e1e
 }
+
+/* .variant-size-item{
+  background-color: #1e1e1e
+} */
+/* .d-flex.align-items-center.quantity-decrement.disabled {
+  background-color: #000000;
+  color: #000000;
+} */
+/* .quantity-decrement.disabled {
+  background-color: #000000;
+  color: #000000;
+} */
+ span {
+  color: #000000;
+ }
+ .MuiRating-root.MuiRating-sizeMedium.Mui-readOnly.MuiRating-readOnly.css-1nuwyci{
+  color: rgb(255, 157, 0)!important;
+ }
