@@ -260,9 +260,9 @@ body.dark-mode .MuiTypography-root.MuiTypography-body2{
   background-color: #000000;
   color: #000000;
 } */
- span {
+ /* span {
   color: #000000;
- }
+ } */
  .MuiRating-root.MuiRating-sizeMedium.Mui-readOnly.MuiRating-readOnly.css-1nuwyci{
   color: rgb(255, 157, 0)!important;
  }

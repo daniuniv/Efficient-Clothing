@@ -369,15 +369,17 @@ const ProductDetail = () => {
       -
     </Button>
     <span style={{
-      width: '40px', 
-      height: '40px', 
-      textAlign: 'center', 
-      lineHeight: '40px', 
-      fontSize: '20px',
-      marginRight: '10px',
-      display: 'inline-block',
-      border: '1px solid lightgray', 
-      backgroundColor: 'white',
+    width: '40px', 
+    height: '40px', 
+    textAlign: 'center', 
+    lineHeight: '40px', 
+    fontSize: '20px',
+    marginRight: '10px',
+    display: 'inline-block',
+    border: '1px solid lightgray', 
+    backgroundColor: size ? 'white' : '#f2f2f2',
+    color: size ? '#000000' : '#a1a1a1',
+    transition: 'background-color 0.3s ease, color 0.3s ease',
     }}>
       {quantity}
     </span>
