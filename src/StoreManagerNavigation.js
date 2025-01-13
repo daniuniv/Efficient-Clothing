@@ -50,6 +50,11 @@ const StoreManagerNavigation = () => {
     navigate("/login"); // Redirect to login page after logout
   };
 
+  // Make sure the menu is closed by default on mount
+  React.useEffect(() => {
+    setAnchorEl(null); // Close menu when component mounts or user state changes
+  }, [user]);
+
   if (!user || user.role !== 'storeManager' || user.approved !== true) { // Only show if user is logged in and has role 'storeManager'
     return null; // Don't render anything if user is not a storeManager
   }

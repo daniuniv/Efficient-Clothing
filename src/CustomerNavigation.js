@@ -50,6 +50,11 @@ const CustomerNavigation = () => {
     navigate("/login"); // Redirect to login page after logout
   };
 
+     // Make sure the menu is closed by default on mount
+     React.useEffect(() => {
+      setAnchorEl(null); // Close menu when component mounts or user state changes
+    }, [user]);
+  
   // If user is not logged in or role is not 'customer', don't render anything
   if (!user || user.role !== 'customer') {
     return null; // Don't render anything if user is not a customer
