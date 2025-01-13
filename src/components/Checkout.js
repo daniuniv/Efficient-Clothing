@@ -57,11 +57,13 @@ const Checkout = () => {
         acc[storeName].push(item);
         return acc;
       }, {});
-
+  
       const subOrders = [];
-
+  
       for (const store in groupedItems) {
         const items = [];
+        let subTotal = 0;
+  
         for (let item of groupedItems[store]) {
           const itemRef = doc(db, "inventory", item.productId);
           const itemSnap = await getDoc(itemRef);
@@ -76,13 +78,18 @@ const Checkout = () => {
             image: imageUrls,
             storeName: item.storeName,
           });
+          subTotal += item.price * item.quantity;
         }
+  
         subOrders.push({
           items,
           storeName: store,
+          totalAmount: subTotal, // Total amount for the sub-order
+          orderId: `sub-${Date.now()}-${store}`, // Unique ID for each sub-order
+          status: "Processing", // Default status
         });
       }
-
+  
       const orderId = `order-${Date.now()}`;
       const newOrder = {
         customerId: userId,
@@ -94,14 +101,14 @@ const Checkout = () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-
+  
       const orderRef = doc(db, "orders", orderId);
       await setDoc(orderRef, newOrder);
-
+  
       for (let item of cartItems) {
         await deleteDoc(doc(db, "cart", item.id));
       }
-
+  
       for (let item of cartItems) {
         const itemRef = doc(db, "inventory", item.productId);
         const itemSnap = await getDoc(itemRef);
@@ -114,7 +121,7 @@ const Checkout = () => {
         });
         await updateDoc(itemRef, { sizes: updatedSizes });
       }
-
+  
       alert("Order placed successfully!");
     } catch (err) {
       setError("Checkout failed. Please try again.");

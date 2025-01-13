@@ -227,3 +227,21 @@ body.dark-mode .css-1588512-MuiButtonBase-root-MuiButton-root{
 body.dark-mode .mb-0{
   background-color: #1e1e1e
 }
+
+body.dark-mode .table-striped > tbody > tr:nth-of-type(2n+1) > * {
+  --bs-table-color-type: var(--bs-table-striped-color);
+  --bs-table-bg-type: #1e1e1e!important;
+}
+
+.table-striped > tbody > tr:nth-of-type(2n+1) > * {
+  --bs-table-color-type: var(--bs-table-striped-color);
+  --bs-table-bg-type: #ffffff!important;
+}
+
+body.dark-mode .css-7ctihp-MuiTypography-root{
+  background-color: #1e1e1e
+}
+
+body.dark-mode .MuiBox-root.css-dvxtzn{
+  background-color: #1e1e1e
+}

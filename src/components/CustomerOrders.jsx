@@ -141,7 +141,7 @@ const CustomerOrders = () => {
                     {/* Render main order details */}
                     <tr key={order.id}>
                       <td colSpan="6" className="table-secondary">
-                        <strong>Main Order:</strong> {order.id} (Delivery Address: {order.deliveryAddress?.street || "N/A"})
+                        <strong>Main Order:</strong> {order.id}
                       </td>
                     </tr>
                     {/* Render sub-orders for this main order */}
@@ -149,8 +149,9 @@ const CustomerOrders = () => {
                       <tr key={subOrder.orderId}>
                         <td>{subOrder.orderId}</td>
                         <td>
-                          {subOrder.deliveryAddress
-                            ? `${subOrder.deliveryAddress.street || "N/A"}, ${subOrder.deliveryAddress.city || "N/A"}`
+                          {/* Main Order's Delivery Address is shown for each sub-order row */}
+                          {order.deliveryAddress
+                            ? `${order.deliveryAddress.street || "N/A"}, ${order.deliveryAddress.city || "N/A"}`
                             : "N/A"}
                         </td>
                         <td>

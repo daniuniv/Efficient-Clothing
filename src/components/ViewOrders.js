@@ -109,7 +109,7 @@ const ViewOrders = () => {
             <MenuItem value="">All</MenuItem>
             <MenuItem value="Processing">Processing</MenuItem>
             <MenuItem value="Shipped">Shipped</MenuItem>
-            <MenuItem value="Pending">Pending</MenuItem>
+            <MenuItem value="Delivered">Pending</MenuItem>
           </Select>
         </FormControl>
 
@@ -218,7 +218,13 @@ const ViewOrders = () => {
                   <StyledTableCell>
                     {new Date(order.createdAt?.seconds * 1000).toLocaleDateString()}
                   </StyledTableCell>
-                  <StyledTableCell>{order.status}</StyledTableCell>
+                  <StyledTableCell>
+                    {order.subOrders?.map((subOrder, index) => (
+                      <div key={index}>
+                        <Typography variant="body2">{subOrder.status}</Typography>
+                      </div>
+                    ))}
+                  </StyledTableCell>
                 </TableRow>
               ))}
             </TableBody>
