@@ -16,7 +16,7 @@ import Rating from '@mui/material/Rating';
 import Box from '@mui/material/Box';
 import StarIcon from '@mui/icons-material/Star';
 import { Carousel } from 'react-bootstrap'; // Bootstrap Carousel import
-import { Button } from '@mui/material'; // MUI Buttons
+import { Button, TextField } from '@mui/material'; // MUI Buttons
 import { CircularProgress } from '@mui/material';
 
 const labels = {
@@ -322,18 +322,91 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          <div className="d-flex align-items-center">
-            <label htmlFor="quantity" style={{ marginRight: '10px' }}>Quantity:</label>
-            <input
-              type="number"
-              id="quantity"
-              name="quantity"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, e.target.value))}
-              style={{ width: '60px', marginRight: '10px' }}
-            />
-          </div>
+          <div className="d-flex flex-column align-items-start">
+  <label htmlFor="quantity" style={{ marginBottom: '10px', fontWeight: 'bold' }}>Quantity:</label>
+  
+ 
+
+  <div className="d-flex align-items-center">
+    <Button 
+      onClick={() => {
+        if (quantity > 1) {
+          setQuantity(quantity - 1);
+        }
+      }} 
+      disabled={!size}
+      style={{
+        marginRight: '10px', 
+        fontSize: '20px', 
+        width: '40px', 
+        height: '40px', 
+        backgroundColor: size ? 'transparent' : '#f2f2f2', 
+        color: size ? 'black' : '#a1a1a1', 
+        border: size ? '1px solid transparent' : '1px solid #d3d3d3', 
+        textAlign: 'center',
+        cursor: size ? 'pointer' : 'not-allowed',
+        transition: 'border 0.3s ease'
+      }}
+      onMouseEnter={(e) => {
+        if (size) e.target.style.border = '1px solid lightgray';
+      }}
+      onMouseLeave={(e) => {
+        if (size) e.target.style.border = '1px solid transparent';
+      }}
+    >
+      -
+    </Button>
+    
+    <span style={{
+      width: '40px', 
+      height: '40px', 
+      textAlign: 'center', 
+      lineHeight: '40px', 
+      fontSize: '20px',
+      marginRight: '10px',
+      display: 'inline-block',
+      border: '1px solid lightgray', 
+      backgroundColor: 'white',
+    }}>
+      {quantity}
+    </span>
+    
+    <Button 
+      onClick={() => {
+        const selectedSize = sizes.find((sizeOption) => sizeOption.size === size);
+        const maxQuantity = selectedSize ? selectedSize.quantity : 0;
+        
+        if (quantity < maxQuantity) {
+          setQuantity(quantity + 1);
+        } else {
+          alert('You exceeded the stock value for this item.');
+        }
+      }} 
+      disabled={!size}
+      style={{
+        fontSize: '20px', 
+        width: '40px', 
+        height: '40px', 
+        backgroundColor: size ? 'transparent' : '#f2f2f2', 
+        color: size ? 'black' : '#a1a1a1', 
+        border: size ? '1px solid transparent' : '1px solid #d3d3d3', 
+        textAlign: 'center',
+        cursor: size ? 'pointer' : 'not-allowed',
+        transition: 'border 0.3s ease'
+      }}
+      onMouseEnter={(e) => {
+        if (size) e.target.style.border = '1px solid lightgray';
+      }}
+      onMouseLeave={(e) => {
+        if (size) e.target.style.border = '1px solid transparent';
+      }}
+    >
+      +
+    </Button>
+  </div>
+</div>
+
+
 
           <Button
   variant="contained"
