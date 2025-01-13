@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { db } from "../firebaseConfig";
 import { collection, getDocs, setDoc, deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { useNavigate } from "react-router-dom"; 
 import {
   Container,
   Typography,
@@ -22,6 +23,7 @@ const Checkout = () => {
   const [error, setError] = useState("");
   const auth = getAuth();
   const userId = auth.currentUser?.uid;
+  const navigate = useNavigate(); // Initialize navigate
 
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -123,6 +125,7 @@ const Checkout = () => {
       }
   
       alert("Order placed successfully!");
+      navigate("/your-orders"); // Redirect to the /your-orders page
     } catch (err) {
       setError("Checkout failed. Please try again.");
     }

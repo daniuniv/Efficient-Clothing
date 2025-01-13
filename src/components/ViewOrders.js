@@ -109,7 +109,7 @@ const ViewOrders = () => {
             <MenuItem value="">All</MenuItem>
             <MenuItem value="Processing">Processing</MenuItem>
             <MenuItem value="Shipped">Shipped</MenuItem>
-            <MenuItem value="Delivered">Pending</MenuItem>
+            <MenuItem value="Delivered">Delivered</MenuItem>
           </Select>
         </FormControl>
 
@@ -141,6 +141,7 @@ const ViewOrders = () => {
                 <StyledTableCell>Size</StyledTableCell>
                 <StyledTableCell>Quantity</StyledTableCell>
                 <StyledTableCell>Order Placed</StyledTableCell>
+                <StyledTableCell>Price</StyledTableCell>
                 <StyledTableCell>Status</StyledTableCell>
               </TableRow>
             </TableHead>
@@ -218,6 +219,15 @@ const ViewOrders = () => {
                   <StyledTableCell>
                     {new Date(order.createdAt?.seconds * 1000).toLocaleDateString()}
                   </StyledTableCell>
+                  {/* New Price Column - Display Price */}  
+                  <StyledTableCell>
+                    {/* Calculate the total price for the order */}
+                    {order.subOrders?.reduce((total, subOrder) => {
+                      const subOrderTotal = subOrder.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+                      return total + subOrderTotal;
+                    }, 0).toFixed(0)}
+                    $
+                </StyledTableCell>
                   <StyledTableCell>
                     {order.subOrders?.map((subOrder, index) => (
                       <div key={index}>
