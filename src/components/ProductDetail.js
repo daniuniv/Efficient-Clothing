@@ -274,30 +274,50 @@ const ProductDetail = () => {
             <strong>Available Sizes:</strong>
             <div className="d-flex flex-wrap">
               {sizes.map((sizeOption) => (
-                <Button
-                  key={sizeOption.size}
-                  onClick={() => setSize(sizeOption.size)}
-                  disabled={sizeOption.quantity === 0}
-                  className={`variant-size-item ${size === sizeOption.size ? 'selected' : ''}`}
-                  style={{
-                    margin: '5px',
-                    minWidth: '72px',
-                    height: '35px',
-                    fontSize: '12px',
-                    borderRadius: '0.45rem',
-                    textTransform: 'capitalize',
-                    backgroundColor: sizeOption.quantity === 0 
-                      ? '#B0B0B0' 
-                      : (size === sizeOption.size ? '#47b49c' : '#333'),
-                    color: '#fff',
-                    transition: 'background-color 0.2s ease',
-                    border: '2px solid #fff',
-                    outline: 'none',
-                    boxShadow: '0 0 3px rgba(255, 255, 255, 0.2)',
-                  }}
-                >
-                  {sizeOption.size}
-                </Button>
+           <Button
+           key={sizeOption.size}
+           onClick={() => setSize(size === sizeOption.size ? null : sizeOption.size)} // Allow unselecting
+           disabled={sizeOption.quantity === 0}
+           className={`variant-size-item ${size === sizeOption.size ? 'selected' : ''}`}
+           style={{
+             margin: '5px',
+             minWidth: '72px',
+             height: '35px',
+             fontSize: '12px',
+             borderRadius: '0.45rem',
+             textTransform: 'capitalize',
+             backgroundColor: sizeOption.quantity === 0
+               ? '#B0B0B0' // Disabled color
+               : size === sizeOption.size
+               ? '#47b49c' // Selected color
+               : '#333', // Default color
+             color: '#fff',
+             transition: 'background-color 0.2s ease',
+             border: '2px solid #fff',
+             outline: 'none',
+             boxShadow: '0 0 3px rgba(255, 255, 255, 0.2)',
+             cursor: sizeOption.quantity === 0 ? 'not-allowed' : 'pointer',
+             ...(sizeOption.quantity !== 0 &&
+               size !== sizeOption.size && {
+                 ':hover': {
+                   backgroundColor: '#5fd3af', // Lighter green on hover
+                 },
+               }),
+           }}
+           onMouseEnter={(e) => {
+             if (sizeOption.quantity !== 0 && size !== sizeOption.size) {
+               e.target.style.backgroundColor = '#5fd3af'; // Change to lighter green on hover
+             }
+           }}
+           onMouseLeave={(e) => {
+             if (sizeOption.quantity !== 0 && size !== sizeOption.size) {
+               e.target.style.backgroundColor = '#333'; // Revert to default color
+             }
+           }}
+         >
+           {sizeOption.size}
+         </Button>
+         
               ))}
             </div>
           </div>
@@ -316,19 +336,27 @@ const ProductDetail = () => {
           </div>
 
           <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddToCart}
-            sx={{
-              marginTop: '20px',
-              padding: '10px 20px',
-              fontSize: '16px',
-              backgroundColor: '#47b49c',
-              '&:hover': { backgroundColor: '#3c9b7b' },
-            }}
-          >
-            Add to Cart
-          </Button>
+  variant="contained"
+  color="primary"
+  onClick={handleAddToCart}
+  disabled={!sizes.some((sizeOption) => sizeOption.quantity > 0)}
+  sx={{
+    marginTop: '20px',
+    padding: '10px 20px',
+    fontSize: '16px',
+    backgroundColor: !sizes.some((sizeOption) => sizeOption.quantity > 0)
+      ? '#B0B0B0'
+      : '#47b49c',
+    '&:hover': {
+      backgroundColor: !sizes.some((sizeOption) => sizeOption.quantity > 0)
+        ? '#B0B0B0'
+        : '#3c9b7b',
+    },
+  }}
+>
+  Add to Cart
+</Button>
+
 
           {confirmation && (
             <div style={{ marginTop: '20px', color: '#28a745' }}>

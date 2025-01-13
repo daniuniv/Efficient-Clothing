@@ -58,19 +58,20 @@ const ViewOrders = () => {
           .map((doc) => ({ id: doc.id, ...doc.data() }))
           .filter((order) => order.customerId === userId); // Filter orders by userId
 
+        // Apply status filter if any
+        const filteredOrders = ordersList.filter((order) => {
+          if (!statusFilter) return true; // No filter applied, include all orders
+          return order.subOrders?.some((subOrder) => subOrder.status === statusFilter);
+        });
+
         // Sort orders by the `createdAt` timestamp in the desired direction
-        const sortedOrders = ordersList.sort((a, b) => {
+        const sortedOrders = filteredOrders.sort((a, b) => {
           const dateA = a.createdAt?.seconds || 0;
           const dateB = b.createdAt?.seconds || 0;
           return sortDirection === "desc" ? dateB - dateA : dateA - dateB;
         });
 
-        // Apply status filter if any
-        const filteredOrders = statusFilter
-          ? sortedOrders.filter((order) => order.status === statusFilter)
-          : sortedOrders;
-
-        setOrders(filteredOrders);
+        setOrders(sortedOrders);
       } catch (err) {
         setError("Failed to load orders.");
       } finally {
@@ -219,15 +220,13 @@ const ViewOrders = () => {
                   <StyledTableCell>
                     {new Date(order.createdAt?.seconds * 1000).toLocaleDateString()}
                   </StyledTableCell>
-                  {/* New Price Column - Display Price */}  
                   <StyledTableCell>
-                    {/* Calculate the total price for the order */}
                     {order.subOrders?.reduce((total, subOrder) => {
-                      const subOrderTotal = subOrder.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+                      const subOrderTotal =
+                        subOrder.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
                       return total + subOrderTotal;
-                    }, 0).toFixed(0)}
-                    $
-                </StyledTableCell>
+                    }, 0).toFixed(2)}$
+                  </StyledTableCell>
                   <StyledTableCell>
                     {order.subOrders?.map((subOrder, index) => (
                       <div key={index}>
