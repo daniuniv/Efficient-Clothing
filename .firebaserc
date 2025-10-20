@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "chic-closetapp"
-  }
+    "default": "chic-closetapp",
+    "efficientclothing": "chic-closetapp"
+  },
+  "targets": {},
+  "etags": {}
 }
