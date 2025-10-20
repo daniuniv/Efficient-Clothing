@@ -169,7 +169,7 @@ const CustomerOrders = () => {
                               {subOrder.items.map((item, index) => (
                                 <li key={index}>
                                   <img
-                                    src={item.image}
+                                    src={item.image.split(',')[0].trim()}
                                     style={{
                                       width: "50px",
                                       height: "50px",

@@ -218,7 +218,7 @@ body.dark-mode .quantity-btn{
 }
 body.dark-mode .css-1588512-MuiButtonBase-root-MuiButton-root{
   background-color: #626262 !important;
-  color:#000000 !important;
+  color:#555555 ;
 }
 .btn.btn-dark.border.border-secondary  {
   margin: auto;
@@ -272,4 +272,16 @@ body.dark-mode .MuiTypography-root.MuiTypography-body2{
  }
  body.dark-mode .MuiTypography-root.MuiTypography-body2.css-445q2d{
   background-color: #121212;
+ }
+ body.dark-mode .variant-size-item.selected.css-1588512-MuiButtonBase-root-MuiButton-root{
+ background-color: rgb(71, 180, 156) !important;
+ }
+ body.dark-mode .MuiTouchRipple-root.css-r3djoj-MuiTouchRipple-root{
+  color:#ffffff!important;
+ }
+ body.dark-mode .MuiBackdrop-root.MuiBackdrop-invisible.MuiModal-backdrop.css-vl6bb4-MuiBackdrop-root-MuiModal-backdrop{
+  background-color: #12121200 !important;
+ }
+ body.dark-mode .MuiPopover-root.MuiMenu-root.MuiModal-root.css-pa188r-MuiModal-root-MuiPopover-root-MuiMenu-root{
+  background-color: #12121200 !important;
  }

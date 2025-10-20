@@ -221,7 +221,7 @@ const InventoryManagement = () => {
             {items.map((item) => (
               <tr key={item.id}>
                 <td>
-                  <img src={item.images} alt={item.name} style={{ width: 50, height: 50, objectFit: 'contain' }} />
+                  <img src={item.images.split(',')[0].trim()} alt={item.name} style={{ width: 50, height: 50, objectFit: 'contain' }} />
                 </td>
                 <td>{item.name}</td>
                 <td>{item.category}</td>

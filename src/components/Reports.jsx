@@ -208,7 +208,7 @@ const Reports = () => {
                 <td>
                   {item.images ? (
                     <img
-                      src={item.images}
+                      src={item.images.split(',')[0].trim()}
                       alt={item.name}
                       style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                     />
